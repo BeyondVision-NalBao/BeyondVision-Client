@@ -16,6 +16,8 @@ dependencies:
   provider:
   google_sign_in: ^6.2.1
   camera: ^0.9.8+1
+  speech_to_text: ^6.6.0
+  flutter_tts: ^3.8.5
 
 dev_dependencies:
   flutter_test:

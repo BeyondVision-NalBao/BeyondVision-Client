@@ -1,8 +1,30 @@
 import 'package:beyond_vision/core/core.dart';
+import 'package:beyond_vision/service/speech_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
+import 'package:speech_to_text/speech_recognition_result.dart';
+import 'package:speech_to_text/speech_to_text.dart';
 
-class Speaker extends StatelessWidget {
+class Speaker extends StatefulWidget {
   const Speaker({super.key});
+
+  @override
+  State<Speaker> createState() => _SpeakerState();
+}
+
+class _SpeakerState extends State<Speaker> {
+  late SpeechToText _speechToText;
+  late Speech speech;
+  bool isListening = false;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _speechToText = SpeechToText();
+    speech = Speech(_speechToText);
+    speech.initSpeech(_speechToText);
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +59,40 @@ class Speaker extends StatelessWidget {
             const SizedBox(
               height: 350,
             ),
-            const CircleAvatar(
-                radius: 50,
-                backgroundColor: Color(boxColor),
-                child: Icon(Icons.mic, size: 50, color: Color(fontYellowColor)))
+            CircleAvatar(
+              radius: 50,
+              backgroundColor: const Color(boxColor),
+              child: IconButton(
+                onPressed: () {
+                  // 상태 변경 및 setState() 호출
+                  setState(() {
+                    if (isListening) {
+                      speech.stopListening();
+                    } else {
+                      speech.startListening();
+                    }
+                    isListening = !isListening;
+                  });
+                },
+                tooltip: 'Listen',
+                icon: Icon(
+                  // 상태에 따라 아이콘 변경
+                  isListening ? Icons.stop : Icons.mic,
+                  size: 50,
+                  color: const Color(fontYellowColor),
+                ),
+              ),
+            ),
+            Container(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                _speechToText.isListening
+                    ? speech.lastWords
+                    : speech.speechEnabled
+                        ? 'Tap the microphone to start listening...'
+                        : 'Speech not available',
+              ),
+            ),
           ],
         ));
   }
