@@ -12,23 +12,25 @@ class Setting extends StatelessWidget {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: Colors.black,
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        crossAxisAlignment: CrossAxisAlignment.end,
-        children: [
-          const Icon(speakerIcon, color: Color(fontYellowColor), size: 50),
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
-            child: GridView.count(
-              crossAxisCount: 2,
-              children: const [
-                SettingBox(name: "운동 목표\n수정"),
-                SettingBox(name: "로그아웃"),
-                SettingBox(name: "회원탈퇴"),
-              ],
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            const Icon(speakerIcon, color: Color(fontYellowColor), size: 50),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: GridView.count(
+                crossAxisCount: 2,
+                children: const [
+                  SettingBox(name: "운동 목표\n수정"),
+                  SettingBox(name: "로그아웃"),
+                  SettingBox(name: "회원탈퇴"),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

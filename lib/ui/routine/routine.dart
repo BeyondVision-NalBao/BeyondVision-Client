@@ -24,17 +24,19 @@ class Routine extends StatelessWidget {
     return Scaffold(
       appBar: MyAppBar(context, titleText: "당신의 루틴"),
       backgroundColor: Colors.black,
-      body: Column(
-        children: [
-          SizedBox(
-            height: MediaQuery.of(context).size.height * 0.7,
-            child: GridView.count(
-              crossAxisCount: 2,
-              children: routine,
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.7,
+              child: GridView.count(
+                crossAxisCount: 2,
+                children: routine,
+              ),
             ),
-          ),
-          const SizedBox(height: 20),
-        ],
+            const SizedBox(height: 20),
+          ],
+        ),
       ),
     );
   }
