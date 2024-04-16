@@ -20,11 +20,15 @@ dependencies:
   flutter_tts: ^3.8.5
   shared_preferences:
   http:
+  path:
   path_provider:
   flutter_native_splash:
   dio: ^5.4.0
   image:
   wakelock: ^0.6.2
+  tflite_flutter:
+  google_mlkit_pose_detection: ^0.10.0
+  image_picker:
 
 
 dev_dependencies:
