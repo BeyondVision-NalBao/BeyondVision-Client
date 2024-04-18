@@ -1,3 +1,4 @@
 {
-    "cmake.sourceDirectory": "C:/Users/kyung/Desktop/SOOKMYUNG/GDSC/beyondvision/beyond_vision/linux"
+  "cmake.sourceDirectory": "C:/Users/kyung/Desktop/SOOKMYUNG/GDSC/beyondvision/beyond_vision/linux",
+  "java.configuration.updateBuildConfiguration": "interactive"
 }
