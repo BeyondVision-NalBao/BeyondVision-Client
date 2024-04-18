@@ -5,17 +5,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 
+import 'package:beyond_vision/ml/painter.dart';
+
 class CameraView extends StatefulWidget {
   const CameraView(
       {Key? key,
-      required this.customPaint,
       this.onCameraFeedReady,
       this.onDetectorViewModeChanged,
       this.onCameraLensDirectionChanged,
-      this.initialCameraLensDirection = CameraLensDirection.back})
+      this.initialCameraLensDirection = CameraLensDirection.front})
       : super(key: key);
 
-  final CustomPaint? customPaint;
   final VoidCallback? onCameraFeedReady;
   final VoidCallback? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
@@ -28,11 +28,17 @@ class CameraView extends StatefulWidget {
 class _CameraViewState extends State<CameraView> {
   static List<CameraDescription> _cameras = [];
   CameraController? _controller;
+  CustomPaint? customPaint;
   int _cameraIndex = -1;
   double _currentZoomLevel = 1.0;
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
   bool _changingCameraLens = false;
+
+  final PoseDetector poseDetector = PoseDetector(
+    options: PoseDetectorOptions(
+        mode: PoseDetectionMode.single, model: PoseDetectionModel.base),
+  );
 
   @override
   void initState() {
@@ -84,7 +90,7 @@ class _CameraViewState extends State<CameraView> {
                 ),
               false => CameraPreview(
                   _controller!,
-                  child: widget.customPaint,
+                  child: customPaint,
                 ),
             },
           ),
@@ -118,7 +124,7 @@ class _CameraViewState extends State<CameraView> {
     final camera = _cameras[_cameraIndex];
     _controller = CameraController(
       camera,
-      ResolutionPreset.high,
+      ResolutionPreset.medium,
       enableAudio: false,
       imageFormatGroup: Platform.isAndroid
           ? ImageFormatGroup.nv21
@@ -135,6 +141,7 @@ class _CameraViewState extends State<CameraView> {
       _controller?.getMaxZoomLevel().then((value) {
         _maxAvailableZoom = value;
       });
+
       _controller?.startImageStream(_processCameraImage).then((value) {
         if (widget.onCameraFeedReady != null) {
           widget.onCameraFeedReady!();
@@ -145,6 +152,50 @@ class _CameraViewState extends State<CameraView> {
       });
       setState(() {});
     });
+  }
+
+  // Future<void> _processImage(InputImage inputImage) async {
+  //   String resultText;
+  //   setState(() {
+  //     resultText = '';
+  //   });
+
+  //   final poses = await poseDetector.processImage(inputImage);
+  //   if (inputImage.metadata?.size != null &&
+  //       inputImage.metadata?.rotation != null) {
+  //     final painter = PosePainter(poses, inputImage.metadata!.size,
+  //         inputImage.metadata!.rotation, CameraLensDirection.back);
+  //     setState(() {
+  //       customPaint = CustomPaint(painter: painter);
+  //     });
+  //   } else {}
+  // }
+
+  void _processCameraImage(CameraImage image) async {
+    if (DateTime.now().millisecondsSinceEpoch % (1000 ~/ 24) == 0) {
+      final inputImage = _inputImageFromCameraImage(image);
+      if (inputImage == null) return;
+
+      // 비동기로 Pose Detection을 처리하고 완료될 때까지 대기
+      final poses = await _processImageAsync(inputImage);
+
+      // Pose Detection 결과를 사용하여 UI 업데이트
+      if (inputImage.metadata?.size != null &&
+          inputImage.metadata?.rotation != null) {
+        final painter = PosePainter(poses, inputImage.metadata!.size,
+            inputImage.metadata!.rotation, CameraLensDirection.back);
+        setState(() {
+          customPaint = CustomPaint(painter: painter);
+        });
+      }
+    }
+    return;
+  }
+
+  Future<List<Pose>> _processImageAsync(InputImage inputImage) async {
+    // Pose Detection을 비동기적으로 처리
+    final poses = await poseDetector.processImage(inputImage);
+    return poses;
   }
 
   Future _stopLiveFeed() async {
@@ -216,9 +267,13 @@ class _CameraViewState extends State<CameraView> {
     );
   }
 
-  void _processCameraImage(CameraImage image) {
-    final inputImage = _inputImageFromCameraImage(image);
-    if (inputImage == null) return;
-    //widget.onImage(inputImage);
-  }
+  // void _processCameraImage(CameraImage image) {
+  //   InputImage inputImage;
+  //   if (DateTime.now().millisecondsSinceEpoch % (1000 ~/ 24) == 0) {
+  //     final inputImage = _inputImageFromCameraImage(image);
+  //     if (inputImage == null) return;
+  //     _processImage(inputImage);
+  //   }
+  //   return;
+  // }
 }

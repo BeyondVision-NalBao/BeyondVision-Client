@@ -1,8 +1,10 @@
 import 'package:beyond_vision/core/constants.dart';
 import 'package:beyond_vision/provider/workout_provider.dart';
-import 'package:beyond_vision/ui/workout/widgets/workout_camera_view.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:camera/camera.dart';
+
+import 'package:beyond_vision/ui/workout/widgets/camera_flutter.dart';
 
 class SuggestBox extends StatelessWidget {
   const SuggestBox({super.key});
@@ -26,11 +28,13 @@ class SuggestBox extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          CameraView(name: workoutProvider.todayWorkout.name)));
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => const CameraView()));
+              // Navigator.push(
+              //     context,
+              //     MaterialPageRoute(
+              //         builder: (context) =>
+              //             CameraView(name: workoutProvider.todayWorkout.name)));
               // Navigator.push(
               //   context,
               //   MaterialPageRoute(
