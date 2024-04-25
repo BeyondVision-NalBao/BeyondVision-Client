@@ -1,4 +1,4 @@
-package com.example.beyond_vision
+package com.beyondvision
 
 import io.flutter.embedding.android.FlutterActivity
 
