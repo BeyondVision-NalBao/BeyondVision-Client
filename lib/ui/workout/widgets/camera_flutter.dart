@@ -1,9 +1,12 @@
 import 'dart:io';
 
+import 'package:beyond_vision/ml/calculate_degree.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:watch_connectivity/watch_connectivity.dart';
 
 import 'package:beyond_vision/ml/painter.dart';
 
@@ -13,19 +16,23 @@ class CameraView extends StatefulWidget {
       this.onCameraFeedReady,
       this.onDetectorViewModeChanged,
       this.onCameraLensDirectionChanged,
-      this.initialCameraLensDirection = CameraLensDirection.front})
+      this.initialCameraLensDirection = CameraLensDirection.front,
+      required this.name})
       : super(key: key);
 
   final VoidCallback? onCameraFeedReady;
   final VoidCallback? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
+  final String name;
 
   @override
   State<CameraView> createState() => _CameraViewState();
 }
 
 class _CameraViewState extends State<CameraView> {
+  final watch = WatchConnectivity();
+
   static List<CameraDescription> _cameras = [];
   CameraController? _controller;
   CustomPaint? customPaint;
@@ -35,6 +42,43 @@ class _CameraViewState extends State<CameraView> {
   double _maxAvailableZoom = 1.0;
   bool _changingCameraLens = false;
 
+  final _supported = false;
+  var _paired = false;
+  final _reachable = false;
+  final _context = <String, dynamic>{};
+  final _receivedContexts = <Map<String, dynamic>>[];
+  final _log = <String>[];
+  FlutterTts tts = FlutterTts();
+
+  CalculateDegree cal = CalculateDegree();
+
+  String workout = "시작 전";
+
+  void sendMessageToWatch() {}
+
+  void startMessage() {
+    final message = {'data': 'phone'};
+    watch.sendMessage(message);
+    print("qhsoTwl");
+    // setState(() => _log.add('Sent message: $message'));
+  }
+
+  void sendMessage() {
+    final message = {'data': 'start'};
+    watch.sendMessage(message);
+    // setState(() => _log.add('Sent message: $message'));
+  }
+
+  void sendContext() {
+    print("anjwl");
+    final context = {'data': 'stop'};
+    //_watch.updateApplicationContext(context);
+
+    watch.sendMessage(context);
+
+    //setState(() => _log.add('Sent message: $context'));
+  }
+
   final PoseDetector poseDetector = PoseDetector(
     options: PoseDetectorOptions(
         mode: PoseDetectionMode.single, model: PoseDetectionModel.base),
@@ -43,7 +87,15 @@ class _CameraViewState extends State<CameraView> {
   @override
   void initState() {
     super.initState();
+
+    tts.setLanguage('ko-KR');
+    tts.setSpeechRate(0.8);
+    tts.setPitch(0.9);
     _initialize();
+
+    if (_paired == true) {
+      watch.messageStream.listen((e) => print(e['data']));
+    }
   }
 
   void _initialize() async {
@@ -57,6 +109,9 @@ class _CameraViewState extends State<CameraView> {
       }
     }
     if (_cameraIndex != -1) {
+      _paired = true;
+      setState(() {});
+      startMessage();
       _startLiveFeed();
     }
   }
@@ -64,6 +119,7 @@ class _CameraViewState extends State<CameraView> {
   @override
   void dispose() {
     _stopLiveFeed();
+    sendContext();
     super.dispose();
   }
 
@@ -154,23 +210,6 @@ class _CameraViewState extends State<CameraView> {
     });
   }
 
-  // Future<void> _processImage(InputImage inputImage) async {
-  //   String resultText;
-  //   setState(() {
-  //     resultText = '';
-  //   });
-
-  //   final poses = await poseDetector.processImage(inputImage);
-  //   if (inputImage.metadata?.size != null &&
-  //       inputImage.metadata?.rotation != null) {
-  //     final painter = PosePainter(poses, inputImage.metadata!.size,
-  //         inputImage.metadata!.rotation, CameraLensDirection.back);
-  //     setState(() {
-  //       customPaint = CustomPaint(painter: painter);
-  //     });
-  //   } else {}
-  // }
-
   void _processCameraImage(CameraImage image) async {
     if (DateTime.now().millisecondsSinceEpoch % (1000 ~/ 24) == 0) {
       final inputImage = _inputImageFromCameraImage(image);
@@ -181,9 +220,17 @@ class _CameraViewState extends State<CameraView> {
 
       // Pose Detection 결과를 사용하여 UI 업데이트
       if (inputImage.metadata?.size != null &&
-          inputImage.metadata?.rotation != null) {
-        final painter = PosePainter(poses, inputImage.metadata!.size,
-            inputImage.metadata!.rotation, CameraLensDirection.back);
+          inputImage.metadata?.rotation != null &&
+          poses.isNotEmpty) {
+        final painter = PosePainter(
+          poses[0],
+          inputImage.metadata!.size,
+          inputImage.metadata!.rotation,
+          CameraLensDirection.front,
+        );
+        String result = cal.exercise(poses[0], widget.name);
+        print("result: $result");
+        await tts.speak(result);
         setState(() {
           customPaint = CustomPaint(painter: painter);
         });
@@ -195,6 +242,7 @@ class _CameraViewState extends State<CameraView> {
   Future<List<Pose>> _processImageAsync(InputImage inputImage) async {
     // Pose Detection을 비동기적으로 처리
     final poses = await poseDetector.processImage(inputImage);
+
     return poses;
   }
 
@@ -226,9 +274,7 @@ class _CameraViewState extends State<CameraView> {
     final sensorOrientation = camera.sensorOrientation;
 
     InputImageRotation? rotation;
-    if (Platform.isIOS) {
-      rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
-    } else if (Platform.isAndroid) {
+    if (Platform.isAndroid) {
       var rotationCompensation =
           _orientations[_controller!.value.deviceOrientation];
       if (rotationCompensation == null) return null;
@@ -266,14 +312,4 @@ class _CameraViewState extends State<CameraView> {
       ),
     );
   }
-
-  // void _processCameraImage(CameraImage image) {
-  //   InputImage inputImage;
-  //   if (DateTime.now().millisecondsSinceEpoch % (1000 ~/ 24) == 0) {
-  //     final inputImage = _inputImageFromCameraImage(image);
-  //     if (inputImage == null) return;
-  //     _processImage(inputImage);
-  //   }
-  //   return;
-  // }
 }

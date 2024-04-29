@@ -3,6 +3,7 @@ import 'package:beyond_vision/provider/login_provider.dart';
 import 'package:beyond_vision/provider/routine_provider.dart';
 import 'package:beyond_vision/provider/workout_provider.dart';
 import 'package:beyond_vision/service/user_service.dart';
+import 'package:beyond_vision/ui/watch_connect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:beyond_vision/service/date_service.dart';
 import 'package:beyond_vision/ui/home/home.dart';
@@ -75,5 +76,6 @@ class _MyAppState extends State<MyApp> {
                 child: child!);
           },
         ));
+    //home: MyAndroidApp()));
   }
 }

@@ -28,8 +28,10 @@ class SuggestBox extends StatelessWidget {
               ),
             ),
             onPressed: () {
-              Navigator.push(context,
-                  MaterialPageRoute(builder: (context) => const CameraView()));
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => const CameraView(name: "숄더프레스")));
               // Navigator.push(
               //     context,
               //     MaterialPageRoute(
