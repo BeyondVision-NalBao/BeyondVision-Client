@@ -22,7 +22,6 @@ class _CalendarState extends State<Calendar> {
     bool getEventsForDay(List<double> records, int day) {
       if (records.length < day) {
         if (records[day] >= auth.goal) {
-          print("왜");
           return true;
         }
       }
@@ -62,14 +61,20 @@ class _CalendarState extends State<Calendar> {
         onDaySelected: widget.provider.updateSelectedDay,
         onPageChanged: widget.provider.moveWeek,
         selectedDayPredicate: (day) => isSameDay(day, selectedDay),
-        headerStyle: const HeaderStyle(
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
+        headerStyle: HeaderStyle(
+          titleTextFormatter: (yearMonth, Locale) {
+            int year = yearMonth.year;
+            int month = yearMonth.month;
+            // 한국어로 월을 표시하는 형식으로 제목을 반환합니다.
+            return '$year년 $month월';
+          },
+          titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24),
           titleCentered: true,
           formatButtonVisible: false,
-          leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
-          rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
+          leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.white),
+          rightChevronIcon:
+              const Icon(Icons.chevron_right, color: Colors.white),
         ),
-        locale: 'ko-KR',
         calendarBuilders: CalendarBuilders(
           dowBuilder: (context, day) {
             switch (day.weekday) {

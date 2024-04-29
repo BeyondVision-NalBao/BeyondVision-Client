@@ -18,9 +18,17 @@ class RecordService {
       for (var record in records) {
         DateTime dateTime = DateTime.parse(record['exerciseDate']);
 
-        recordInstance.add(Record(record["recordId"], record["exerciseCount"],
-            record["exerciseTime"], record["exerciseName"], dateTime));
+        recordInstance.add(Record(
+            record["recordId"],
+            record["exerciseCount"],
+            record["exerciseTime"],
+            record["exerciseName"],
+            dateTime,
+            record["successCount"],
+            record["caloriesBurnedSum"],
+            record['averageHeartRate']));
       }
+      print(recordInstance[15].recordId);
       return recordInstance;
     }
     return recordInstance;

@@ -13,16 +13,15 @@ class RecordDetail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     DateProvider provider = Provider.of<DateProvider>(context);
-    List<Widget> todays = provider.todayRecords
-        .map((value) => DetailBox(
-            title: value.exerciseName!, time: value.exerciseTime!.toString()))
-        .toList();
+    List<Widget> todays =
+        provider.todayRecords.map((value) => DetailBox(record: value)).toList();
     List<Widget> children = [
       const DetailTitle(title: "기록 요약"),
       const DetailLine(),
       const SizedBox(height: 10),
       DetailText(
           title: "운동 시간(분)", text: provider.todayExerciseTime.toString()),
+      const DetailText(title: "평균 심박수", text: "-"),
       const DetailText(title: "소모 칼로리", text: "-"),
       const SizedBox(height: 50),
       const DetailTitle(title: "운동 기록"),
