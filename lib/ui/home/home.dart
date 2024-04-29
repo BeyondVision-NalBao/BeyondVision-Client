@@ -28,6 +28,7 @@ class _HomePageState extends State<HomePage> {
       auth.getGoal(widget.exerciseGoal!);
     }
     if (widget.isFirst == true) {
+      tts.setLanguage('ko-KR');
       tts.setSpeechRate(0.4);
       tts.setPitch(0.9);
       tts.speak(
