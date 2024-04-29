@@ -73,7 +73,8 @@ class DateProvider extends ChangeNotifier {
           .where((record) => isSameDay(record.exerciseDate, currentDate))
           .toList();
       if (record.isEmpty) {
-        thisWeek.add([Record(null, null, null, null, currentDate)]);
+        thisWeek.add(
+            [Record(null, null, null, null, currentDate, null, null, null)]);
       } else {
         thisWeek.add(record);
         thisWeekOnlyResult.add(record);
