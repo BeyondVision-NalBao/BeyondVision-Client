@@ -127,6 +127,8 @@ class PosePainter extends CustomPainter {
     paintLine(
         PoseLandmarkType.rightHip, PoseLandmarkType.rightAnkle, rightPaint);
     paintLine(PoseLandmarkType.rightHip, PoseLandmarkType.leftHip, paint);
+    paintLine(PoseLandmarkType.rightHip, PoseLandmarkType.rightShoulder, paint);
+    paintLine(PoseLandmarkType.leftShoulder, PoseLandmarkType.leftHip, paint);
 
     //운동 종류별로 함수 실행
   }

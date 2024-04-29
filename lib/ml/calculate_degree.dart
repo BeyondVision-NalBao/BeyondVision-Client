@@ -167,60 +167,62 @@ class CalculateDegree {
     String result = "";
     double leftThreshold = 85;
     double rightThreshold = 85;
-    final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftAnkle];
-    final PoseLandmark joint2 = pose.landmarks[PoseLandmarkType.leftShoulder];
-    final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftHip];
+    final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final PoseLandmark joint2 = pose.landmarks[PoseLandmarkType.leftElbow];
+    final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftWrist];
 
-    final PoseLandmark joint4 = pose.landmarks[PoseLandmarkType.rightAnkle];
-    final PoseLandmark joint5 = pose.landmarks[PoseLandmarkType.rightShoulder];
-    final PoseLandmark joint6 = pose.landmarks[PoseLandmarkType.rightHip];
+    final PoseLandmark joint4 = pose.landmarks[PoseLandmarkType.rightShoulder];
+    final PoseLandmark joint5 = pose.landmarks[PoseLandmarkType.rightElbow];
+    final PoseLandmark joint6 = pose.landmarks[PoseLandmarkType.rightWrist];
 
     final leftDegree = calculateAngle(joint1, joint2, joint3);
     final rightDegree = calculateAngle(joint4, joint5, joint6);
+    final leftHeight = joint1.y - joint2.y;
+    final rightHeight = joint4.y - joint5.y;
 
     if (leftThreshold <= leftDegree && rightThreshold <= rightDegree) {
-      print("잘하고 있습니다.");
       result = "잘하고 있습니다.";
     } else if (leftThreshold <= leftDegree && rightThreshold > rightDegree) {
-      print("오른팔을 조금 더 들어주세요");
-      result = "오른팔을 조금 더 들어주세요.";
+      result = "오른팔을 90도로 만들어주세요";
     } else if (leftThreshold > leftDegree && rightThreshold <= rightDegree) {
-      print("왼쪽 팔을 조금 더 들어주세요");
-      result = "왼쪽 팔을 조금 더 들어주세요.";
-    } else {
-      result = "양쪽 팔을 조금 더 들어주세요.";
-      print("exercise result: $result");
+      result = "왼쪽 팔을 90도로 만들어주세요";
+    } else if (leftHeight > 10) {
+      result = "왼쪽 팔꿈치가 너무 내려갔습니다.";
+    } else if (leftHeight < -10) {
+      result = "왼쪽 팔을 더 구부려주세요";
+    } else if (rightHeight > 10) {
+      result = "오른쪽 팔꿈치가 너무 내려갔습니다.";
+    } else if (leftHeight < -10) {
+      result = "오른쪽 팔을 더 구부려주세요";
     }
     return result;
   }
 
   String lateralRaise(pose) {
+    //양팔을 들어올리기 좌우로
+    //어깨 - 손목 높이
     String result = "";
     double leftThreshold = 85;
     double rightThreshold = 85;
-    final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftAnkle];
-    final PoseLandmark joint2 = pose.landmarks[PoseLandmarkType.leftShoulder];
-    final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftHip];
+    final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftWrist];
 
-    final PoseLandmark joint4 = pose.landmarks[PoseLandmarkType.rightAnkle];
-    final PoseLandmark joint5 = pose.landmarks[PoseLandmarkType.rightShoulder];
-    final PoseLandmark joint6 = pose.landmarks[PoseLandmarkType.rightHip];
+    final PoseLandmark joint4 = pose.landmarks[PoseLandmarkType.rightShoulder];
+    final PoseLandmark joint6 = pose.landmarks[PoseLandmarkType.rightWrist];
 
-    final leftDegree = calculateAngle(joint1, joint2, joint3);
-    final rightDegree = calculateAngle(joint4, joint5, joint6);
+    //어깨 - 손목
+    //양수면 어깨가 위
+    final leftHeight = joint1.y - joint3.y;
+    final rightHeight = joint4.y - joint6.y;
 
-    if (leftThreshold <= leftDegree && rightThreshold <= rightDegree) {
-      print("잘하고 있습니다.");
-      result = "잘하고 있습니다.";
-    } else if (leftThreshold <= leftDegree && rightThreshold > rightDegree) {
-      print("오른팔을 조금 더 들어주세요");
-      result = "오른팔을 조금 더 들어주세요.";
-    } else if (leftThreshold > leftDegree && rightThreshold <= rightDegree) {
-      print("왼쪽 팔을 조금 더 들어주세요");
-      result = "왼쪽 팔을 조금 더 들어주세요.";
-    } else {
-      result = "양쪽 팔을 조금 더 들어주세요.";
-      print("exercise result: $result");
+    if (leftHeight > 20) {
+      result = "왼쪽 팔을 더 들어주세요";
+    } else if (leftHeight < -20) {
+      result = "왼쪽 팔이 너무 올라갔습니다.";
+    } else if (rightHeight > 20) {
+      result = "오른쪽 팔을 더 들어주세요";
+    } else if (leftHeight < -20) {
+      result = "오른쪽 팔이 너무 올라갔습니다.";
     }
     return result;
   }
