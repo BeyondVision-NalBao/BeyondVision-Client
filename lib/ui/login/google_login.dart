@@ -21,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
     // TODO: implement initState
     TtsService ttsService = TtsService();
     FlutterTts tts = FlutterTts();
-
+    tts.setLanguage('ko-KR');
     tts.setSpeechRate(0.4);
     tts.setPitch(0.9);
     tts.speak(ttsService.InitExplain);
