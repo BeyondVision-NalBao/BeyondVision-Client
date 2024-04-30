@@ -2,7 +2,6 @@ import 'package:beyond_vision/core/constants.dart';
 import 'package:beyond_vision/provider/workout_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:camera/camera.dart';
 
 import 'package:beyond_vision/ui/workout/widgets/camera_flutter.dart';
 

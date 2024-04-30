@@ -47,12 +47,9 @@ class _CameraViewState extends State<CameraView> {
   double _maxAvailableZoom = 1.0;
   bool _changingCameraLens = false;
 
-  final _supported = false;
+  var _supported = false;
   var _paired = false;
-  final _reachable = false;
-  final _context = <String, dynamic>{};
-  final _receivedContexts = <Map<String, dynamic>>[];
-  final _log = <String>[];
+  var _reachable = false;
 
   FlutterTts tts = FlutterTts();
   bool isSpeaking = false;
@@ -63,27 +60,10 @@ class _CameraViewState extends State<CameraView> {
 
   String resultFromWatch = "";
 
-  void sendMessageToWatch() {}
-
-  void startMessage() {
-    final message = {'data': 'phone'};
-    watch.sendMessage(message);
-    // setState(() => _log.add('Sent message: $message'));
-  }
-
-  void sendMessage(String msg) {
+  void sendMessagetoWatch(String msg) {
     final message = {'data': msg};
     watch.sendMessage(message);
     // setState(() => _log.add('Sent message: $message'));
-  }
-
-  void sendContext() {
-    final context = {'data': 'stop'};
-    //_watch.updateApplicationContext(context);
-
-    watch.sendMessage(context);
-
-    //setState(() => _log.add('Sent message: $context'));
   }
 
   final PoseDetector poseDetector = PoseDetector(
@@ -99,11 +79,19 @@ class _CameraViewState extends State<CameraView> {
     tts.setSpeechRate(0.8);
     tts.setPitch(0.9);
     _initialize();
-    print(widget.name);
-    //pair이 true가 되는 부분이 없는데?
-    if (_paired == true) {
-      watch.messageStream.listen((e) => print(e['data']));
+    initPlatformState();
+    if (_paired == true && _reachable == true && _supported) {
+      watch.messageStream.listen((e) {
+        print(e['data']);
+      });
     }
+  }
+
+  void initPlatformState() async {
+    _supported = await watch.isSupported;
+    _paired = await watch.isPaired;
+    _reachable = await watch.isReachable;
+    setState(() {});
   }
 
   void _initialize() async {
@@ -119,7 +107,6 @@ class _CameraViewState extends State<CameraView> {
     if (_cameraIndex != -1) {
       _paired = true;
       setState(() {});
-      startMessage();
       _startLiveFeed();
     }
   }
@@ -199,7 +186,7 @@ class _CameraViewState extends State<CameraView> {
         _maxAvailableZoom = value;
       });
 
-      sendMessage("exercise");
+      sendMessagetoWatch(widget.name);
       _controller?.startImageStream(_processCameraImage).then((value) {
         if (widget.onCameraFeedReady != null) {
           widget.onCameraFeedReady!();
@@ -328,9 +315,8 @@ class _CameraViewState extends State<CameraView> {
     //success count
     int successCount = cal.success;
     //심박수 데이터, 운동시간, 칼로리
-    if (_paired == true) {
-      final context = {'data': 'stop'};
-      watch.sendMessage(context);
+    if (_paired == true && _reachable) {
+      sendMessagetoWatch('stop');
     }
     //서버로 저장
     // final url =
@@ -360,7 +346,6 @@ class _CameraViewState extends State<CameraView> {
   @override
   void dispose() {
     _stopLiveFeed();
-    sendContext();
     super.dispose();
   }
 }
