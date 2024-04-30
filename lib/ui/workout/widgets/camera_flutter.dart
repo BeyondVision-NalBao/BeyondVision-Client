@@ -17,7 +17,8 @@ class CameraView extends StatefulWidget {
       this.onDetectorViewModeChanged,
       this.onCameraLensDirectionChanged,
       this.initialCameraLensDirection = CameraLensDirection.front,
-      required this.name})
+      required this.name,
+      required this.count})
       : super(key: key);
 
   final VoidCallback? onCameraFeedReady;
@@ -25,6 +26,7 @@ class CameraView extends StatefulWidget {
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
   final String name;
+  final int count;
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -87,7 +89,7 @@ class _CameraViewState extends State<CameraView> {
   @override
   void initState() {
     super.initState();
-
+    cal.count == widget.count;
     tts.setLanguage('ko-KR');
     tts.setSpeechRate(0.8);
     tts.setPitch(0.9);
@@ -211,7 +213,10 @@ class _CameraViewState extends State<CameraView> {
   }
 
   void _processCameraImage(CameraImage image) async {
-    if (DateTime.now().millisecondsSinceEpoch % (1000 ~/ 24) == 0) {
+    if (DateTime.now().millisecondsSinceEpoch % (1000 ~/ 24) == 0 &&
+        cal.count > 0) {
+      print("result: ${cal.count}");
+
       final inputImage = _inputImageFromCameraImage(image);
       if (inputImage == null) return;
 
@@ -235,10 +240,13 @@ class _CameraViewState extends State<CameraView> {
           customPaint = CustomPaint(painter: painter);
         });
       }
+    } else if (cal.count == 0) {
+      finishExercise();
     }
     return;
   }
 
+  void finishExercise() {}
   Future<List<Pose>> _processImageAsync(InputImage inputImage) async {
     // Pose Detection을 비동기적으로 처리
     final poses = await poseDetector.processImage(inputImage);

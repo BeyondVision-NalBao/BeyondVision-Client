@@ -8,13 +8,14 @@ import 'dart:io';
 
 class CalculateDegree {
   int count = 0;
+  int success = 0;
   bool direction = false;
   bool ready = false;
 
   String exercise(Pose pose, String exercise) {
     String result = "";
     double threshold;
-
+    count--;
     if (ready == true && direction == true) {
       if (exercise == "스쿼트") {
       } else if (exercise == "숄더프레스") {
@@ -182,6 +183,7 @@ class CalculateDegree {
 
     if (leftThreshold <= leftDegree && rightThreshold <= rightDegree) {
       result = "잘하고 있습니다.";
+      success++;
     } else if (leftThreshold <= leftDegree && rightThreshold > rightDegree) {
       result = "오른팔을 90도로 만들어주세요";
     } else if (leftThreshold > leftDegree && rightThreshold <= rightDegree) {
@@ -223,6 +225,9 @@ class CalculateDegree {
       result = "오른쪽 팔을 더 들어주세요";
     } else if (leftHeight < -20) {
       result = "오른쪽 팔이 너무 올라갔습니다.";
+    } else {
+      result = "잘하고 있습니다.";
+      success++;
     }
     return result;
   }
@@ -242,4 +247,8 @@ class CalculateDegree {
   void stretch2() {}
 
   void stretch3() {}
+
+  int getSuccessCount() {
+    return success;
+  }
 }
