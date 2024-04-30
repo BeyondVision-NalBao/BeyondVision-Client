@@ -133,83 +133,8 @@ class PosePainter extends CustomPainter {
     //운동 종류별로 함수 실행
   }
 
-  double calculateAngle(pose, a, b, c) {
-    final PoseLandmark joint1 = pose.landmarks[a];
-    final PoseLandmark joint2 = pose.landmarks[b];
-
-    final PoseLandmark joint3 = pose.landmarks[c];
-
-    var radians = atan2(joint3.y - joint2.y, joint3.x - joint2.x) -
-        atan2(joint1.y - joint2.y, joint1.x - joint2.x);
-    var angle = (radians * 180.0 / pi).abs();
-    if (angle > 180.0) {
-      angle = 360 - angle;
-    }
-    return angle;
-  }
-
-  void shoulderPress(pose) {
-    final PoseLandmark joint1 = pose.landmark[PoseLandmarkType.leftAnkle];
-    final PoseLandmark joint2 = pose.landmark[PoseLandmarkType.leftShoulder];
-    final PoseLandmark joint3 = pose.landmark[PoseLandmarkType.leftHip];
-  }
-
-  void lateralRaise() {}
-
-  void hundred() {}
-
-  void plank() {}
-
-  void frontRaise() {}
-
-  void zetUp() {}
-
-  void bridge() {}
-
-  void stretch1() {}
-
-  void stretch2() {}
-
-  void stretch3() {}
-
-  // String squart() {
-  //   return "";
-  // }
-
-  // String plank() {
-  //   return "";
-  // }
-
   @override
   bool shouldRepaint(covariant PosePainter oldDelegate) {
     return oldDelegate.imageSize != imageSize || oldDelegate.poses != poses;
   }
 }
-
-
-
-    // var angleKnee = calcuateAngle(pose, PoseLandmarkType.rightHip,
-    //     PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle);
-    // var angleHip = calcuateAngle(pose, PoseLandmarkType.rightShoulder,
-    //     PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee);
-
-    // final Paint background = Paint()..color = Colors.black;
-    // final builder = ParagraphBuilder(ParagraphStyle(
-    //   textAlign: TextAlign.left,
-    //   fontSize: 12,
-    //   textDirection: TextDirection.ltr,
-    // ));
-    // builder
-    //     .pushStyle(ui.TextStyle(color: Colors.white, background: background));
-    // builder.addText(angleKnee.toStringAsFixed(0));
-    // builder.pop();
-
-    // final rkJoint = pose.landmarks[PoseLandmarkType.rightKnee]!;
-    // var textOffset = Offset(
-    //     translateX(rkJoint.x, size, imageSize, rotation, cameraLensDirection),
-    //     translateY(
-    //         rkJoint.y, size, imageSize, rotation, cameraLensDirection));
-
-    // canvas.drawParagraph(
-    //     builder.build()..layout(const ParagraphConstraints(width: 100)),
-    //     textOffset);
