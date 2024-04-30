@@ -121,11 +121,11 @@ class PosePainter extends CustomPainter {
         PoseLandmarkType.rightShoulder, PoseLandmarkType.leftShoulder, paint);
     //다리쪽 선
     paintLine(PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee, leftPaint);
-    paintLine(PoseLandmarkType.leftHip, PoseLandmarkType.leftAnkle, leftPaint);
+    paintLine(PoseLandmarkType.leftKnee, PoseLandmarkType.leftAnkle, leftPaint);
     paintLine(
         PoseLandmarkType.rightHip, PoseLandmarkType.rightKnee, rightPaint);
     paintLine(
-        PoseLandmarkType.rightHip, PoseLandmarkType.rightAnkle, rightPaint);
+        PoseLandmarkType.rightKnee, PoseLandmarkType.rightAnkle, rightPaint);
     paintLine(PoseLandmarkType.rightHip, PoseLandmarkType.leftHip, paint);
     paintLine(PoseLandmarkType.rightHip, PoseLandmarkType.rightShoulder, paint);
     paintLine(PoseLandmarkType.leftShoulder, PoseLandmarkType.leftHip, paint);
