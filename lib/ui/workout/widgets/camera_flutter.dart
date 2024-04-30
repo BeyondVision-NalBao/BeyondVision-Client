@@ -1,12 +1,15 @@
 import 'dart:io';
 
 import 'package:beyond_vision/ml/calculate_degree.dart';
+import 'package:beyond_vision/model/record_model.dart';
+import 'package:beyond_vision/ui/workout/widgets/workout_result.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
+import 'package:http/http.dart' as http;
 
 import 'package:beyond_vision/ml/painter.dart';
 
@@ -50,29 +53,31 @@ class _CameraViewState extends State<CameraView> {
   final _context = <String, dynamic>{};
   final _receivedContexts = <Map<String, dynamic>>[];
   final _log = <String>[];
+
   FlutterTts tts = FlutterTts();
+  bool isSpeaking = false;
 
   CalculateDegree cal = CalculateDegree();
 
   String workout = "시작 전";
+
+  String resultFromWatch = "";
 
   void sendMessageToWatch() {}
 
   void startMessage() {
     final message = {'data': 'phone'};
     watch.sendMessage(message);
-    print("qhsoTwl");
     // setState(() => _log.add('Sent message: $message'));
   }
 
-  void sendMessage() {
-    final message = {'data': 'start'};
+  void sendMessage(String msg) {
+    final message = {'data': msg};
     watch.sendMessage(message);
     // setState(() => _log.add('Sent message: $message'));
   }
 
   void sendContext() {
-    print("anjwl");
     final context = {'data': 'stop'};
     //_watch.updateApplicationContext(context);
 
@@ -89,12 +94,13 @@ class _CameraViewState extends State<CameraView> {
   @override
   void initState() {
     super.initState();
-    cal.count == widget.count;
+    cal.setCount(widget.count);
     tts.setLanguage('ko-KR');
     tts.setSpeechRate(0.8);
     tts.setPitch(0.9);
     _initialize();
-
+    print(widget.name);
+    //pair이 true가 되는 부분이 없는데?
     if (_paired == true) {
       watch.messageStream.listen((e) => print(e['data']));
     }
@@ -116,13 +122,6 @@ class _CameraViewState extends State<CameraView> {
       startMessage();
       _startLiveFeed();
     }
-  }
-
-  @override
-  void dispose() {
-    _stopLiveFeed();
-    sendContext();
-    super.dispose();
   }
 
   @override
@@ -200,6 +199,7 @@ class _CameraViewState extends State<CameraView> {
         _maxAvailableZoom = value;
       });
 
+      sendMessage("exercise");
       _controller?.startImageStream(_processCameraImage).then((value) {
         if (widget.onCameraFeedReady != null) {
           widget.onCameraFeedReady!();
@@ -208,6 +208,7 @@ class _CameraViewState extends State<CameraView> {
           widget.onCameraLensDirectionChanged!(camera.lensDirection);
         }
       });
+
       setState(() {});
     });
   }
@@ -215,8 +216,6 @@ class _CameraViewState extends State<CameraView> {
   void _processCameraImage(CameraImage image) async {
     if (DateTime.now().millisecondsSinceEpoch % (1000 ~/ 24) == 0 &&
         cal.count > 0) {
-      print("result: ${cal.count}");
-
       final inputImage = _inputImageFromCameraImage(image);
       if (inputImage == null) return;
 
@@ -234,8 +233,13 @@ class _CameraViewState extends State<CameraView> {
           CameraLensDirection.front,
         );
         String result = cal.exercise(poses[0], widget.name);
-        print("result: $result");
-        await tts.speak(result);
+
+        if (!isSpeaking) {
+          isSpeaking = true;
+          await tts.speak(result).then((_) {
+            isSpeaking = false; // 말하기가 끝나면 상태 업데이트
+          });
+        }
         setState(() {
           customPaint = CustomPaint(painter: painter);
         });
@@ -246,7 +250,6 @@ class _CameraViewState extends State<CameraView> {
     return;
   }
 
-  void finishExercise() {}
   Future<List<Pose>> _processImageAsync(InputImage inputImage) async {
     // Pose Detection을 비동기적으로 처리
     final poses = await poseDetector.processImage(inputImage);
@@ -319,5 +322,45 @@ class _CameraViewState extends State<CameraView> {
         bytesPerRow: plane.bytesPerRow, // used only in iOS
       ),
     );
+  }
+
+  void finishExercise() async {
+    //success count
+    int successCount = cal.success;
+    //심박수 데이터, 운동시간, 칼로리
+    if (_paired == true) {
+      final context = {'data': 'stop'};
+      watch.sendMessage(context);
+    }
+    //서버로 저장
+    // final url =
+    //     Uri.parse('https://6b53-1-209-144-251.ngrok-free.app/exercise/output');
+
+    // final response = await http.get(url);
+
+    // if (response.statusCode == 200) {
+    // Record(successCount, exerciseTime, widget.name, DateTime.now().toString(),
+    //     successCount, caloriesBurnedSum, averageHeartRate);
+    // final Map<String, dynamic> data =
+    //     jsonDecode(utf8.decode(response.bodyBytes));
+    // WorkoutResult workoutResult = WorkoutResult.fromJson(data);
+
+    // results.add(workoutResult);
+    // Navigator.pop(context);
+    // Navigator.push(
+    //     context,
+    //     MaterialPageRoute(
+    //         builder: (context) => WorkoutResultPage(
+    //               results: results,
+    //             )));
+    // }
+    //go to result page
+  }
+
+  @override
+  void dispose() {
+    _stopLiveFeed();
+    sendContext();
+    super.dispose();
   }
 }
