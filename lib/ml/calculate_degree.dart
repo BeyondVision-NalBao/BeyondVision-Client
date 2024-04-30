@@ -37,6 +37,8 @@ class CalculateDegree {
           result = lateralRaise(pose);
         }
       } else if (name == "헌드레드") {
+        count--;
+        result = hundred(pose);
       } else if (name == "플랭크") {
         threshold = initCalculateAngle(pose, PoseLandmarkType.leftShoulder,
             PoseLandmarkType.leftElbow, PoseLandmarkType.leftWrist);
@@ -56,6 +58,8 @@ class CalculateDegree {
           result = "팔을 더 들어주세요";
         }
       } else if (name == "제트업") {
+        count--;
+        result = zetUp(pose);
       } else if (name == "브릿지") {
         threshold = initCalculateAngle(pose, PoseLandmarkType.leftShoulder,
             PoseLandmarkType.leftHip, PoseLandmarkType.leftKnee);
@@ -89,7 +93,7 @@ class CalculateDegree {
     final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftHeel];
     final PoseLandmark joint2 = pose.landmarks[PoseLandmarkType.leftEye];
 
-    double height = joint1.y - joint2.y;
+    double height = (joint1.y - joint2.y).abs();
 
     //x 좌표로 오른쪽, 왼쪽이 모두 프레임에 들어왔는지 확인하기
 
@@ -280,6 +284,42 @@ class CalculateDegree {
     return result;
   }
 
+  String hundred(pose) {
+    String result = "";
+
+    //귀-어깨-팔꿈치
+    //설명할때 손끝을 골반옆에 두라고 하기
+    final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftEar];
+    final PoseLandmark joint2 = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftElbow];
+
+    double firstLimit = calculateAngle(joint1, joint2, joint3);
+    //120-130
+
+    //어깨-힙-무릎
+    final PoseLandmark joint4 = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final PoseLandmark joint5 = pose.landmarks[PoseLandmarkType.leftHip];
+    final PoseLandmark joint6 = pose.landmarks[PoseLandmarkType.leftKnee];
+
+    double secondLimit = calculateAngle(joint4, joint5, joint6);
+    //100-120
+
+    if (secondLimit > 150) {
+      result = "다리를 더 들어주세요";
+    } else if (secondLimit < 90) {
+      result = "다리를 바닥으로 내려주세요";
+    } else if (firstLimit > 150) {
+      result = "상체를 더 올려주세요";
+    } else if (firstLimit < 110) {
+      result = "턱을 약간 들어주세요";
+    } else {
+      success++;
+      result = "잘하고 있습니다.";
+    }
+
+    return result;
+  }
+
   String plank(pose) {
     String result = "";
     //귀- 어깨 - 팔꿈치
@@ -354,6 +394,33 @@ class CalculateDegree {
 
   String zetUp(pose) {
     String result = "";
+    //상체 직선
+    final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftEar];
+    final PoseLandmark joint2 = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftHip];
+
+    final firstLimit = calculateAngle(joint1, joint2, joint3);
+
+    //다리 각도
+    final PoseLandmark joint4 = pose.landmarks[PoseLandmarkType.leftHip];
+    final PoseLandmark joint5 = pose.landmarks[PoseLandmarkType.leftKnee];
+    final PoseLandmark joint6 = pose.landmarks[PoseLandmarkType.leftAnkle];
+    final secondLimit = calculateAngle(joint4, joint5, joint6);
+
+    final PoseLandmark joint7 = pose.landmarks[PoseLandmarkType.leftElbow];
+    final PoseLandmark joint8 = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final PoseLandmark joint9 = pose.landmarks[PoseLandmarkType.leftHip];
+    final thirdLimit = calculateAngle(joint4, joint5, joint6);
+
+    if (firstLimit < 170) {
+      result = "상체를 곧게 펴주세요";
+    } else if (secondLimit > 80) {
+      result = "더 뒤로 기울여 주세요";
+    } else if (thirdLimit > 80) {
+      result = "팔을 내려주세요";
+    } else {
+      result = "잘하고 있습니다";
+    }
 
     return result;
   }
@@ -386,6 +453,7 @@ class CalculateDegree {
     } else if (secondLimit < 30) {
       result = "상체를 곧게 펴주세요";
     } else if (firstLimit > 170 && secondLimit > 30 && secondLimit < 40) {
+      success++;
       result = "잘하고 있습니다.";
     }
 

@@ -32,7 +32,7 @@ class SuggestBox extends StatelessWidget {
                   context,
                   MaterialPageRoute(
                       builder: (context) =>
-                          const CameraView(name: "브릿지", count: 30)));
+                          const CameraView(name: "헌드레드", count: 30)));
               // Navigator.push(
               //     context,
               //     MaterialPageRoute(
