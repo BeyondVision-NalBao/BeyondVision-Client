@@ -16,14 +16,12 @@ class _EditGoalState extends State<EditGoal> {
 
   @override
   void initState() {
-    // TODO: implement initState
     _count = TextEditingController();
     super.initState();
   }
 
   @override
   void dispose() {
-    // TODO: implement dispose
     _count.dispose();
     super.dispose();
   }
@@ -96,9 +94,7 @@ class _EditGoalState extends State<EditGoal> {
                       auth.goal, int.parse(_count.text), auth.memberId);
                   auth.goal = isSuccess;
                   Navigator.pop(context);
-                  if (isSuccess == true) {
-                    _showDialog();
-                  }
+                  _showDialog();
                 },
                 child: const Text("수정하기",
                     style: TextStyle(
