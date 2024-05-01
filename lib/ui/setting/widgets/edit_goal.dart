@@ -92,9 +92,9 @@ class _EditGoalState extends State<EditGoal> {
             const SizedBox(height: 30),
             TextButton(
                 onPressed: () async {
-                  bool isSuccess = await userService.editUserInfo(
-                      int.parse(_count.text), auth.memberId);
-
+                  int isSuccess = await userService.editUserInfo(
+                      auth.goal, int.parse(_count.text), auth.memberId);
+                  auth.goal = isSuccess;
                   Navigator.pop(context);
                   if (isSuccess == true) {
                     _showDialog();
