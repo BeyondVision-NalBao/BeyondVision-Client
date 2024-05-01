@@ -78,7 +78,7 @@ class UserService {
     return false;
   }
 
-  Future<bool> editUserInfo(int newGoal, int memberId) async {
+  Future<int> editUserInfo(int oldGoal, int newGoal, int memberId) async {
     final url = Uri.parse('$baseUrl/info/$memberId');
 
     var response = await http.post(url,
@@ -88,13 +88,12 @@ class UserService {
     if (response.statusCode == 200) {
       var data = jsonDecode(utf8.decode(response.bodyBytes));
       User currentUser = User.fromJson(data);
-      auth.editGoal(currentUser.exerciseGoal);
-      print(auth.goal);
+
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setInt("exerciseGoal", currentUser.exerciseGoal);
-      return true;
+      return newGoal;
     }
-    return false;
+    return oldGoal;
   }
 
   Future<bool> logout() async {
