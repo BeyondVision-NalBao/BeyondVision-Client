@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
+import 'package:wakelock/wakelock.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -51,7 +52,6 @@ class _CameraViewState extends State<CameraView> {
   double _minAvailableZoom = 1.0;
   double _maxAvailableZoom = 1.0;
   bool _changingCameraLens = false;
-
   var _supported = false;
   var _paired = false;
   var _reachable = false;
@@ -66,8 +66,9 @@ class _CameraViewState extends State<CameraView> {
   List<Map<String, int>> resultFromWatch = [];
   int exerciseTime = 0;
   int heartRate = 0;
-  int calories = 0;
-
+  double calories = 0;
+  int successCount = 0;
+  List<Record> results = [];
   void sendMessagetoWatch(String msg) {
     final message = {'data': msg};
     watch.sendMessage(message);
@@ -81,6 +82,7 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void initState() {
+    Wakelock.enable();
     super.initState();
     cal.setCount(widget.count);
     tts.setLanguage('ko-KR');
@@ -88,16 +90,15 @@ class _CameraViewState extends State<CameraView> {
     tts.setPitch(0.9);
     _initialize();
     initPlatformState();
-    if (_paired == true && _reachable == true && _supported) {
-      watch.messageStream.listen((e) {
-        print(e['data']);
-        List<Map<String, dynamic>> parsedJson = jsonDecode(e['data']);
-        exerciseTime = parsedJson[0]['time'];
-        heartRate = parsedJson[0]['heartRate'];
-        calories = parsedJson[0]['calories'];
-        setState(() {});
-      });
-    }
+    sendMessagetoWatch(widget.name);
+    watch.messageStream.listen((e) {
+      List<dynamic> parsedJson = jsonDecode(e['data']);
+      exerciseTime = parsedJson[0]['time'];
+      heartRate = parsedJson[0]['heartRate'];
+      calories = parsedJson[0]['calories'];
+      finishExercise();
+      setState(() {});
+    });
   }
 
   void initPlatformState() async {
@@ -118,17 +119,9 @@ class _CameraViewState extends State<CameraView> {
       }
     }
     if (_cameraIndex != -1) {
-      _paired = true;
       setState(() {});
       _startLiveFeed();
     }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _liveFeedBody(),
-    );
   }
 
   Widget _liveFeedBody() {
@@ -199,7 +192,6 @@ class _CameraViewState extends State<CameraView> {
         _maxAvailableZoom = value;
       });
 
-      sendMessagetoWatch(widget.name);
       _controller?.startImageStream(_processCameraImage).then((value) {
         if (widget.onCameraFeedReady != null) {
           widget.onCameraFeedReady!();
@@ -208,7 +200,7 @@ class _CameraViewState extends State<CameraView> {
           widget.onCameraLensDirectionChanged!(camera.lensDirection);
         }
       });
-
+      initPlatformState();
       setState(() {});
     });
   }
@@ -245,7 +237,7 @@ class _CameraViewState extends State<CameraView> {
         });
       }
     } else if (cal.count == 0) {
-      finishExercise();
+      _stopLiveFeed();
     }
     return;
   }
@@ -260,6 +252,8 @@ class _CameraViewState extends State<CameraView> {
   Future _stopLiveFeed() async {
     await _controller?.stopImageStream();
     await _controller?.dispose();
+
+    sendMessagetoWatch('stop');
     _controller = null;
   }
 
@@ -326,40 +320,41 @@ class _CameraViewState extends State<CameraView> {
 
   void finishExercise() async {
     //success count
-    int successCount = cal.success;
+    successCount = cal.success;
     //심박수 데이터, 운동시간, 칼로리
-    if (_paired == true && _reachable) {
-      sendMessagetoWatch('stop');
-    }
-    List<Record> results = [];
-
-    _stopLiveFeed();
     if (exerciseTime != 0) {
       Record record = Record(null, successCount, exerciseTime, widget.name,
           DateTime.now(), successCount, calories, heartRate);
 
-      //서버로 저장
-      final url = Uri.parse(
-          'http://34.64.89.205/api/v1/exercise/record/${widget.exerciseId}');
-
-      var response = await http.post(url,
-          headers: {"Content-Type": "application/json; charset=UTF-8"},
-          body: json.encode({
-            "exerciseTime": exerciseTime,
-            "exerciseCount": widget.count,
-            "memberId": 1,
-            "successCount": successCount,
-            "caloriesBurnedSum": calories,
-            "averageHeartRate": heartRate
-          }));
-
-      if (response.statusCode == 200) {
-        results.add(record);
-      }
+      results.add(record);
+      setState(() {});
     }
-    //state 오류가 안나려면?
-    //go to result page
-    //Navigator.pop(context);
+  }
+
+  saveRecord() async {
+    //   //서버로 저장
+    final url = Uri.parse(
+        'http://34.64.89.205/api/v1/exercise/record/${widget.exerciseId}');
+
+    var response = await http.post(url,
+        headers: {"Content-Type": "application/json; charset=UTF-8"},
+        body: json.encode({
+          "exerciseTime": exerciseTime,
+          "exerciseCount": widget.count,
+          "memberId": widget.memberId,
+          "successCount": successCount,
+          "caloriesBurnedSum": calories,
+          "averageHeartRate": heartRate
+        }));
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(response.body);
+    }
+    throw Error();
+  }
+
+  void goToResult() {
+    Navigator.pop(context);
     Navigator.push(
         context,
         MaterialPageRoute(
@@ -370,6 +365,21 @@ class _CameraViewState extends State<CameraView> {
 
   @override
   void dispose() {
+    // 카메라 컨트롤러 해제
+    Wakelock.disable(); // Wakelock 비활성화
+    tts.stop();
+
     super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (results.isEmpty) {
+      return Scaffold(
+        body: _liveFeedBody(),
+      );
+    } else {
+      return WorkoutResultPage(results: results);
+    }
   }
 }

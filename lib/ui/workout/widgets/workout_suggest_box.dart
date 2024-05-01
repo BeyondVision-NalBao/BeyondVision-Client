@@ -1,6 +1,5 @@
 import 'package:beyond_vision/core/constants.dart';
 import 'package:beyond_vision/provider/login_provider.dart';
-import 'package:beyond_vision/provider/workout_provider.dart';
 import 'package:beyond_vision/service/workout_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -12,7 +11,6 @@ class SuggestBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    WorkoutProvider workoutProvider = Provider.of<WorkoutProvider>(context);
     AuthProvider auth = Provider.of<AuthProvider>(context);
     WorkOutService workoutService = WorkOutService();
 
@@ -40,7 +38,7 @@ class SuggestBox extends StatelessWidget {
                           MaterialPageRoute(
                               builder: (context) => CameraView(
                                   name: snapshot.data!.name,
-                                  count: 30,
+                                  count: 3,
                                   exerciseId: snapshot.data!.exerciseId,
                                   memberId: auth.memberId)));
                     },
@@ -58,7 +56,7 @@ class SuggestBox extends StatelessWidget {
                                   fontWeight: FontWeight.bold),
                             ),
                             Text(
-                              workoutProvider.todayWorkout.name,
+                              snapshot.data!.name,
                               style: const TextStyle(
                                   fontSize: 36,
                                   color: Colors.white,

@@ -1,10 +1,7 @@
 import 'package:beyond_vision/core/constants.dart';
 import 'package:beyond_vision/model/record_model.dart';
-import 'package:beyond_vision/provider/workout_provider.dart';
-import 'package:beyond_vision/service/workout_service.dart';
 import 'package:beyond_vision/ui/home/home.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 
 class WorkoutResultPage extends StatelessWidget {
   final List<Record> results;

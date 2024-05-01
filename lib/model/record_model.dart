@@ -5,7 +5,7 @@ class Record {
   final String? exerciseName;
   final DateTime? exerciseDate;
   final int? successCount;
-  final int? caloriesBurnedSum;
+  final double? caloriesBurnedSum;
   final int? averageHeartRate;
 
   Record(

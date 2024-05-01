@@ -14,6 +14,7 @@ import 'package:provider/provider.dart';
 
 void main() {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+
   initializeDateFormatting().then((_) => runApp(const MyApp()));
 }
 
