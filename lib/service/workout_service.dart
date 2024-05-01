@@ -28,7 +28,7 @@ class WorkOutService {
     return workoutInstances;
   }
 
-  Future<WorkOut> getRandom() async {
+  Future<WorkOut> getRecommend(int memberId) async {
     final url = Uri.parse('$baseUrl/random');
 
     final response = await http.get(url);
@@ -36,27 +36,27 @@ class WorkOutService {
     if (response.statusCode == 200) {
       final Map<String, dynamic> data =
           jsonDecode(utf8.decode(response.bodyBytes));
-      WorkOut randomWorkout = WorkOut.fromJson(data);
+      WorkOut recommandWorkout = WorkOut.fromJson(data);
 
-      return randomWorkout;
+      return recommandWorkout;
     }
     throw Error();
   }
 
-  Future<WorkoutResult> getresults() async {
-    final url =
-        Uri.parse('https://52ff-221-145-51-165.ngrok-free.app/exercise/output');
+  // Future<WorkoutResult> getResults() async {
+  //   final url =
+  //       Uri.parse('https://52ff-221-145-51-165.ngrok-free.app/exercise/output');
 
-    final response = await http.get(url);
+  //   final response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      final Map<String, dynamic> data =
-          jsonDecode(utf8.decode(response.bodyBytes));
-      WorkoutResult workoutResult = WorkoutResult.fromJson(data);
-      return workoutResult;
-    }
-    throw Error();
-  }
+  //   if (response.statusCode == 200) {
+  //     final Map<String, dynamic> data =
+  //         jsonDecode(utf8.decode(response.bodyBytes));
+  //     WorkoutResult workoutResult = WorkoutResult.fromJson(data);
+  //     return workoutResult;
+  //   }
+  //   throw Error();
+  // }
 
   // Future<void> postReady() async {
   //   final url = Uri.parse('$baseUrl/1/ready');

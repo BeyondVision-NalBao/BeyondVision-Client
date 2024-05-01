@@ -1,5 +1,7 @@
 import 'package:beyond_vision/core/constants.dart';
+import 'package:beyond_vision/provider/login_provider.dart';
 import 'package:beyond_vision/provider/workout_provider.dart';
+import 'package:beyond_vision/service/workout_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -11,74 +13,70 @@ class SuggestBox extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     WorkoutProvider workoutProvider = Provider.of<WorkoutProvider>(context);
+    AuthProvider auth = Provider.of<AuthProvider>(context);
+    WorkOutService workoutService = WorkOutService();
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 5.0),
-      child: SizedBox(
-        width: MediaQuery.of(context).size.width,
-        child: Padding(
-          padding: const EdgeInsets.all(1.0),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(10),
-              backgroundColor: const Color(boxColor),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            onPressed: () {
-              Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                      builder: (context) =>
-                          const CameraView(name: "헌드레드", count: 30)));
-              // Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (context) =>
-              //             CameraView(name: workoutProvider.todayWorkout.name)));
-              // Navigator.push(
-              //   context,
-              //   MaterialPageRoute(
-              //       builder: (context) => const WorkoutResultPage()),
-              // );
-              // Navigator.push(
-              //     context,
-              //     MaterialPageRoute(
-              //         builder: (context) => CameraView(
-              //             workout: WorkOut(
-              //                 1, "스쿼트", "description", 0, "exerciseImageUrl"),
-              //             count: 30)));
-            },
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      "오늘의 운동",
-                      style: TextStyle(
-                          fontSize: 28,
-                          color: Color(fontYellowColor),
-                          fontWeight: FontWeight.bold),
+    return FutureBuilder(
+        future: workoutService.getRecommend(auth.memberId),
+        builder: (context, snapshot) {
+          if (snapshot.hasData) {
+            return Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 5.0),
+              child: SizedBox(
+                width: MediaQuery.of(context).size.width,
+                child: Padding(
+                  padding: const EdgeInsets.all(1.0),
+                  child: ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.all(10),
+                      backgroundColor: const Color(boxColor),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(30),
+                      ),
                     ),
-                    Text(
-                      workoutProvider.todayWorkout.name,
-                      style: const TextStyle(
-                          fontSize: 36,
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold),
+                    onPressed: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => CameraView(
+                                  name: snapshot.data!.name,
+                                  count: 30,
+                                  exerciseId: snapshot.data!.exerciseId,
+                                  memberId: auth.memberId)));
+                    },
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "오늘의 운동",
+                              style: TextStyle(
+                                  fontSize: 28,
+                                  color: Color(fontYellowColor),
+                                  fontWeight: FontWeight.bold),
+                            ),
+                            Text(
+                              workoutProvider.todayWorkout.name,
+                              style: const TextStyle(
+                                  fontSize: 36,
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ],
+                        ),
+                        const Icon(Icons.arrow_forward_ios, color: Colors.white)
+                      ],
                     ),
-                  ],
+                  ),
                 ),
-                const Icon(Icons.arrow_forward_ios, color: Colors.white)
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
+              ),
+            );
+          } else {
+            return const CircleAvatar();
+          }
+        });
   }
 }
 //   }

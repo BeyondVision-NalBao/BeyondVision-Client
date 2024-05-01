@@ -66,12 +66,4 @@ class WorkoutProvider extends ChangeNotifier {
       workoutEx = workoutCore[2];
     }
   }
-
-  void getWorkoutResult(WorkoutResult result) {
-    results.add(result);
-  }
-
-  void sumTime(int time) {
-    sum += time;
-  }
 }

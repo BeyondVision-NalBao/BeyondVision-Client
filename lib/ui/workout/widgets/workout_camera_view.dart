@@ -172,21 +172,21 @@ class _CameraViewState extends State<CameraView> {
 
     final response = await http.get(url);
 
-    if (response.statusCode == 200) {
-      List<WorkoutResult> results = [];
-      final Map<String, dynamic> data =
-          jsonDecode(utf8.decode(response.bodyBytes));
-      WorkoutResult workoutResult = WorkoutResult.fromJson(data);
+    // if (response.statusCode == 200) {
+    //   List<WorkoutResult> results = [];
+    //   final Map<String, dynamic> data =
+    //       jsonDecode(utf8.decode(response.bodyBytes));
+    //   WorkoutResult workoutResult = WorkoutResult.fromJson(data);
 
-      results.add(workoutResult);
-      Navigator.pop(context);
-      Navigator.push(
-          context,
-          MaterialPageRoute(
-              builder: (context) => WorkoutResultPage(
-                    results: results,
-                  )));
-    }
+    //   results.add(workoutResult);
+    //   Navigator.pop(context);
+    //   Navigator.push(
+    //       context,
+    //       MaterialPageRoute(
+    //           builder: (context) => WorkoutResultPage(
+    //                 results: results,
+    //               )));
+    // }
   }
 
   @override

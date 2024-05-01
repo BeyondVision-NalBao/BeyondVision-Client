@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:beyond_vision/ml/calculate_degree.dart';
 import 'package:beyond_vision/model/record_model.dart';
+import 'package:beyond_vision/provider/workout_provider.dart';
 import 'package:beyond_vision/ui/workout/widgets/workout_result.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -10,7 +11,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:http/http.dart' as http;
-
+import 'dart:convert';
 import 'package:beyond_vision/ml/painter.dart';
 
 class CameraView extends StatefulWidget {
@@ -21,7 +22,9 @@ class CameraView extends StatefulWidget {
       this.onCameraLensDirectionChanged,
       this.initialCameraLensDirection = CameraLensDirection.front,
       required this.name,
-      required this.count})
+      required this.count,
+      required this.exerciseId,
+      required this.memberId})
       : super(key: key);
 
   final VoidCallback? onCameraFeedReady;
@@ -30,6 +33,8 @@ class CameraView extends StatefulWidget {
   final CameraLensDirection initialCameraLensDirection;
   final String name;
   final int count;
+  final int exerciseId;
+  final int memberId;
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -58,7 +63,10 @@ class _CameraViewState extends State<CameraView> {
 
   String workout = "시작 전";
 
-  String resultFromWatch = "";
+  List<Map<String, int>> resultFromWatch = [];
+  int exerciseTime = 0;
+  int heartRate = 0;
+  int calories = 0;
 
   void sendMessagetoWatch(String msg) {
     final message = {'data': msg};
@@ -83,6 +91,11 @@ class _CameraViewState extends State<CameraView> {
     if (_paired == true && _reachable == true && _supported) {
       watch.messageStream.listen((e) {
         print(e['data']);
+        List<Map<String, dynamic>> parsedJson = jsonDecode(e['data']);
+        exerciseTime = parsedJson[0]['time'];
+        heartRate = parsedJson[0]['heartRate'];
+        calories = parsedJson[0]['calories'];
+        setState(() {});
       });
     }
   }
@@ -318,34 +331,45 @@ class _CameraViewState extends State<CameraView> {
     if (_paired == true && _reachable) {
       sendMessagetoWatch('stop');
     }
-    //서버로 저장
-    // final url =
-    //     Uri.parse('https://6b53-1-209-144-251.ngrok-free.app/exercise/output');
+    List<Record> results = [];
 
-    // final response = await http.get(url);
+    _stopLiveFeed();
+    if (exerciseTime != 0) {
+      Record record = Record(null, successCount, exerciseTime, widget.name,
+          DateTime.now(), successCount, calories, heartRate);
 
-    // if (response.statusCode == 200) {
-    // Record(successCount, exerciseTime, widget.name, DateTime.now().toString(),
-    //     successCount, caloriesBurnedSum, averageHeartRate);
-    // final Map<String, dynamic> data =
-    //     jsonDecode(utf8.decode(response.bodyBytes));
-    // WorkoutResult workoutResult = WorkoutResult.fromJson(data);
+      //서버로 저장
+      final url = Uri.parse(
+          'http://34.64.89.205/api/v1/exercise/record/${widget.exerciseId}');
 
-    // results.add(workoutResult);
-    // Navigator.pop(context);
-    // Navigator.push(
-    //     context,
-    //     MaterialPageRoute(
-    //         builder: (context) => WorkoutResultPage(
-    //               results: results,
-    //             )));
-    // }
+      var response = await http.post(url,
+          headers: {"Content-Type": "application/json; charset=UTF-8"},
+          body: json.encode({
+            "exerciseTime": exerciseTime,
+            "exerciseCount": widget.count,
+            "memberId": 1,
+            "successCount": successCount,
+            "caloriesBurnedSum": calories,
+            "averageHeartRate": heartRate
+          }));
+
+      if (response.statusCode == 200) {
+        results.add(record);
+      }
+    }
+    //state 오류가 안나려면?
     //go to result page
+    //Navigator.pop(context);
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+            builder: (context) => WorkoutResultPage(
+                  results: results,
+                )));
   }
 
   @override
   void dispose() {
-    _stopLiveFeed();
     super.dispose();
   }
 }

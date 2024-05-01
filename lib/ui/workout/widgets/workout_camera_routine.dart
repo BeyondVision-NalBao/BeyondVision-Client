@@ -190,23 +190,23 @@ class _CameraViewState extends State<CameraView> {
       timer.cancel();
       _initializeCamera();
     } else {
-      goToResult();
+     //goToResult();
     }
   }
 
-  void goToResult() {
-    Navigator.pop(context);
-    Navigator.pushReplacement(
-        context, MaterialPageRoute(builder: (context) => HomePage()));
-    Navigator.push(
-        context, MaterialPageRoute(builder: (context) => const WorkOut()));
-    Navigator.push(
-        context,
-        MaterialPageRoute(
-            builder: (context) => WorkoutResultPage(
-                  results: results,
-                )));
-  }
+  // void goToResult() {
+  //   Navigator.pop(context);
+  //   Navigator.pushReplacement(
+  //       context, MaterialPageRoute(builder: (context) => HomePage()));
+  //   Navigator.push(
+  //       context, MaterialPageRoute(builder: (context) => const WorkOut()));
+  //   Navigator.push(
+  //       context,
+  //       MaterialPageRoute(
+  //           builder: (context) => WorkoutResultPage(
+  //                 results: results,
+  //               )));
+  // }
 
   @override
   void dispose() {
