@@ -27,6 +27,7 @@ class Setting extends StatelessWidget {
                 children: const [
                   SettingBox(name: "운동 목표\n수정"),
                   SettingBox(name: "로그아웃"),
+                  SettingBox(name: "몸무게\n수정"),
                 ],
               ),
             ),

@@ -31,6 +31,7 @@ class _MyAppState extends State<MyApp> {
   bool isLogined = false;
   int memberId = -1;
   int exerciseGoal = 0;
+  int weight = 70;
 
   checkLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -40,6 +41,7 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           memberId = prefs.getInt("memberId")!;
           exerciseGoal = prefs.getInt("exerciseGoal")!;
+          //weight = prefs.getInt("weight")!;
           isLogined = true;
         });
       }
@@ -67,7 +69,10 @@ class _MyAppState extends State<MyApp> {
           title: 'Beyond Vision',
           home: isLogined
               ? HomePage(
-                  memberId: memberId, exerciseGoal: exerciseGoal, isFirst: true)
+                  memberId: memberId,
+                  exerciseGoal: exerciseGoal,
+                  weight: weight,
+                  isFirst: true)
               : const LoginPage(),
           debugShowCheckedModeBanner: false,
           builder: (context, child) {

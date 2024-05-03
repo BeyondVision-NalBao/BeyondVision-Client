@@ -13,6 +13,10 @@ class DetailBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String setting = "회";
+    if (title == "헌드레드" || title == "플랭크" || title == "제트업" || title == "브릿지") {
+      setting = "초";
+    }
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
       child: Container(
@@ -35,7 +39,7 @@ class DetailBox extends StatelessWidget {
                         fontWeight: FontWeight.bold)),
               ),
               Center(
-                child: Text('$time회',
+                child: Text('$time $setting',
                     style: const TextStyle(color: Colors.white, fontSize: 20)),
               ),
               ReorderableDragStartListener(

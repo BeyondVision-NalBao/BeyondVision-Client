@@ -20,6 +20,7 @@ class _NewInfoState extends State<NewInfo> {
   SingingCharacter? _character = SingingCharacter.lafayette;
   TextEditingController ageController = TextEditingController();
   TextEditingController goalController = TextEditingController();
+  TextEditingController weightController = TextEditingController();
 
   UserService userService = UserService();
   @override
@@ -121,7 +122,7 @@ class _NewInfoState extends State<NewInfo> {
               const Padding(
                 padding: EdgeInsets.all(15.0),
                 child: Text(
-                  "운동 목표 입력",
+                  "운동 목표 입력(분)",
                   style: TextStyle(
                       fontSize: 40,
                       color: Color(fontYellowColor),
@@ -139,24 +140,48 @@ class _NewInfoState extends State<NewInfo> {
                 ),
               ),
               const SizedBox(height: 40),
+              const Padding(
+                padding: EdgeInsets.all(15.0),
+                child: Text(
+                  "몸무게 입력",
+                  style: TextStyle(
+                      fontSize: 40,
+                      color: Color(fontYellowColor),
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20),
+                child: TextField(
+                  style: const TextStyle(
+                      color: Color(fontYellowColor), fontSize: 40),
+                  keyboardType: TextInputType.number,
+                  controller: weightController,
+                  // onSubmitted: (String value) async{await showDialog()},
+                ),
+              ),
               Center(
                 child: ElevatedButton(
                     style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(boxColor)),
-                    onPressed: () {
+                    onPressed: () async {
                       String gender;
                       _character == SingingCharacter.lafayette
                           ? gender = '남성'
                           : gender = '여성';
-                      userService.postUserInfo(
+                      User user = await userService.postUserInfo(
                           int.parse(ageController.text),
                           gender,
                           int.parse(goalController.text),
+                          int.parse(weightController.text),
                           widget.currentUser);
                       Navigator.pushReplacement(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => HomePage(isFirst: true)));
+                              builder: (context) => HomePage(
+                                  exerciseGoal: int.parse(goalController.text),
+                                  weight: int.parse(weightController.text),
+                                  isFirst: true)));
                     },
                     child: const Padding(
                       padding: EdgeInsets.all(8.0),

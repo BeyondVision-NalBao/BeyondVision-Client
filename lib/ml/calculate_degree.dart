@@ -69,8 +69,17 @@ class CalculateDegree {
           result = "발을 좀 더 아래에 두세요";
         }
       } else if (name == "스트레칭1") {
+        count--;
+        if (count % 2 == 0) {
+          result = "잘하고 있습니다";
+        } else {
+          result = "더 쭉 늘려주세요";
+        }
       } else if (name == "스트레칭2") {
-      } else if (name == "스트레칭3") {}
+        stretch2(pose);
+      } else if (name == "스트레칭3") {
+        stretch3(pose);
+      }
     } else if (direction == false) {
       return setDirection(pose, name);
     } else if (ready == false) {
@@ -434,7 +443,6 @@ class CalculateDegree {
     final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftKnee];
     final firstLimit = calculateAngle(joint1, joint2, joint3);
 
-    print("firstLimit: $firstLimit");
     //170이상
 
     //등이 굽었는지...
@@ -443,7 +451,6 @@ class CalculateDegree {
     final PoseLandmark joint6 = pose.landmarks[PoseLandmarkType.leftElbow];
     final secondLimit = calculateAngle(joint4, joint5, joint6);
 
-    print("secondLimit: $secondLimit");
     //30~40
 
     if (firstLimit < 150 && secondLimit > 50) {
@@ -460,9 +467,35 @@ class CalculateDegree {
     return result;
   }
 
-  void stretch1(pose) {}
+  String stretch2(pose) {
+    String result = "";
+    //엉덩이 위치
+    final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftShoulder];
+    final PoseLandmark joint2 = pose.landmarks[PoseLandmarkType.leftHip];
+    final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftKnee];
+    final firstLimit = calculateAngle(joint1, joint2, joint3);
 
-  void stretch2(pose) {}
+    if (firstLimit > 120) {
+      result = "잘하고 있습니다.";
+    } else {
+      result = "조금만 상체를 세워주세요";
+    }
 
-  void stretch3(pose) {}
+    return result;
+  }
+
+  String stretch3(pose) {
+    String result = "";
+    final PoseLandmark joint1 = pose.landmarks[PoseLandmarkType.leftHip];
+    final PoseLandmark joint2 = pose.landmarks[PoseLandmarkType.leftKnee];
+    final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftAnkle];
+    final firstLimit = calculateAngle(joint1, joint2, joint3);
+
+    if (firstLimit < 170) {
+      result = "다리를 쭉 펴주세요";
+    } else {
+      result = "잘하고 있습니다.";
+    }
+    return result;
+  }
 }

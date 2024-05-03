@@ -27,6 +27,7 @@ class UserService {
         if (!currentUser.isNewMember!) {
           prefs.setInt("memberId", currentUser.memberId!);
           prefs.setInt("exerciseGoal", currentUser.exerciseGoal);
+          prefs.setInt("weight", currentUser.weight ?? 70);
           print(currentUser.memberId!);
           print(currentUser.exerciseGoal);
         }
@@ -38,7 +39,7 @@ class UserService {
   }
 
   Future<User> postUserInfo(
-      int age, String gender, int exerciseGoal, User user) async {
+      int age, String gender, int exerciseGoal, int weight, User user) async {
     final url = Uri.parse('$baseUrl/signup');
 
     var response = await http.post(url,
@@ -50,6 +51,7 @@ class UserService {
           "profileImageUrl": user.profileImageUrl,
           "age": age,
           "gender": gender,
+          "weight": weight,
           "exerciseGoal": exerciseGoal,
         }));
     if (response.statusCode == 200) {
@@ -58,6 +60,7 @@ class UserService {
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setInt("memberId", currentUser.memberId!);
       prefs.setInt("exerciseGoal", currentUser.exerciseGoal);
+      prefs.setInt("weight", currentUser.weight!);
       return currentUser;
     }
     throw Error();
@@ -91,6 +94,26 @@ class UserService {
 
       SharedPreferences prefs = await SharedPreferences.getInstance();
       prefs.setInt("exerciseGoal", currentUser.exerciseGoal);
+
+      return newGoal;
+    }
+    return oldGoal;
+  }
+
+  Future<int> editUserWeight(int oldGoal, int newGoal, int memberId) async {
+    final url = Uri.parse('$baseUrl/info/$memberId');
+
+    var response = await http.post(url,
+        headers: {"Content-Type": "application/json; charset=UTF-8"},
+        body: json.encode({"exerciseGoal": newGoal}));
+
+    if (response.statusCode == 200) {
+      var data = jsonDecode(utf8.decode(response.bodyBytes));
+      User currentUser = User.fromJson(data);
+
+      SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setInt("exerciseGoal", currentUser.exerciseGoal);
+
       return newGoal;
     }
     return oldGoal;

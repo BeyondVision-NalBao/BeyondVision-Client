@@ -11,7 +11,6 @@ class RecordService {
     final url = Uri.parse('$baseUrl/record/$memberId');
 
     final response = await http.get(url);
-
     if (response.statusCode == 200) {
       final List<dynamic> records = jsonDecode(utf8.decode(response.bodyBytes));
 
@@ -26,9 +25,8 @@ class RecordService {
             dateTime,
             record["successCount"],
             record["caloriesBurnedSum"],
-            record['averageHeartRate']));
+            record["averageHeartRate"]));
       }
-      print(recordInstance[15].recordId);
       return recordInstance;
     }
     return recordInstance;

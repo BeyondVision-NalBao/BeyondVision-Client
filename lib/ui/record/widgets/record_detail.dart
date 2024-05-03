@@ -21,8 +21,9 @@ class RecordDetail extends StatelessWidget {
       const SizedBox(height: 10),
       DetailText(
           title: "운동 시간(분)", text: provider.todayExerciseTime.toString()),
-      const DetailText(title: "평균 심박수", text: "-"),
-      const DetailText(title: "소모 칼로리", text: "-"),
+      DetailText(title: "평균 심박수", text: provider.average.toStringAsFixed(2)),
+      DetailText(
+          title: "소모 칼로리", text: provider.todayCalories.toStringAsFixed(2)),
       const SizedBox(height: 50),
       const DetailTitle(title: "운동 기록"),
       const DetailLine(),

@@ -18,6 +18,7 @@ class _CalendarState extends State<Calendar> {
   Widget build(BuildContext context) {
     DateTime selectedDay = widget.provider.selectedDay;
     AuthProvider auth = Provider.of<AuthProvider>(context);
+    DateProvider date = Provider.of<DateProvider>(context);
 
     bool getEventsForDay(List<double> records, int day) {
       if (records.length < day) {
@@ -37,6 +38,7 @@ class _CalendarState extends State<Calendar> {
         //       widget.provider.thisWeekExerciseTime, day.weekday);
         //   return isSuccess ? [true] : [];
         // },
+
         daysOfWeekStyle:
             const DaysOfWeekStyle(weekdayStyle: TextStyle(color: Colors.white)),
         calendarStyle: const CalendarStyle(
@@ -76,6 +78,23 @@ class _CalendarState extends State<Calendar> {
               const Icon(Icons.chevron_right, color: Colors.white),
         ),
         calendarBuilders: CalendarBuilders(
+          markerBuilder: (context, day, events) {
+            for (var record in date.records) {
+              if ((record.exerciseTime! / 60) >= auth.goal &&
+                  isSameDay(record.exerciseDate!, day)) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 30.0),
+                  child: Container(
+                      width: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(fontYellowColor),
+                        shape: BoxShape.circle,
+                      )),
+                );
+              }
+            }
+            return null;
+          },
           dowBuilder: (context, day) {
             switch (day.weekday) {
               case 1:

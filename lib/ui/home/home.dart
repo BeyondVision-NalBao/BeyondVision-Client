@@ -9,8 +9,14 @@ import 'package:flutter_tts/flutter_tts.dart';
 class HomePage extends StatefulWidget {
   final int? memberId;
   final int? exerciseGoal;
+  final int? weight;
   bool isFirst;
-  HomePage({Key? key, this.memberId, this.exerciseGoal, this.isFirst = false})
+  HomePage(
+      {Key? key,
+      this.memberId,
+      this.exerciseGoal,
+      this.weight,
+      this.isFirst = false})
       : super(key: key);
 
   @override
@@ -26,6 +32,8 @@ class _HomePageState extends State<HomePage> {
     if (widget.memberId != null && widget.exerciseGoal != null) {
       auth.getMemberId(widget.memberId!);
       auth.getGoal(widget.exerciseGoal!);
+
+      auth.getWeight(70);
     }
     if (widget.isFirst == true) {
       tts.setLanguage('ko-KR');

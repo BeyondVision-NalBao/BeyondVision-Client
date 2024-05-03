@@ -23,7 +23,6 @@ class WorkOut extends StatelessWidget {
             if (snapshot.connectionState == ConnectionState.done) {
               if (snapshot.hasData) {
                 workoutProvider.getWorkoutList(snapshot.data!);
-                workoutProvider.todayWorkout = workoutProvider.workoutBottom[0];
 
                 return Scaffold(
                     appBar: MyAppBar(context, titleText: "운동 하기"),

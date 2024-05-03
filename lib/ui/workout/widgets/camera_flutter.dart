@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:beyond_vision/ml/calculate_degree.dart';
 import 'package:beyond_vision/model/record_model.dart';
-import 'package:beyond_vision/provider/workout_provider.dart';
+import 'package:beyond_vision/model/workout_model.dart';
 import 'package:beyond_vision/ui/workout/widgets/workout_result.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
@@ -15,6 +15,9 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:beyond_vision/ml/painter.dart';
 
+import 'package:beyond_vision/core/constants.dart';
+import 'package:beyond_vision/ui/workout/widgets/workout_explain.dart';
+
 class CameraView extends StatefulWidget {
   const CameraView(
       {Key? key,
@@ -22,20 +25,20 @@ class CameraView extends StatefulWidget {
       this.onDetectorViewModeChanged,
       this.onCameraLensDirectionChanged,
       this.initialCameraLensDirection = CameraLensDirection.front,
-      required this.name,
+      required this.workout,
       required this.count,
-      required this.exerciseId,
-      required this.memberId})
+      required this.memberId,
+      required this.weight})
       : super(key: key);
 
   final VoidCallback? onCameraFeedReady;
   final VoidCallback? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
-  final String name;
+  final WorkOut workout;
   final int count;
-  final int exerciseId;
   final int memberId;
+  final int weight;
 
   @override
   State<CameraView> createState() => _CameraViewState();
@@ -69,6 +72,8 @@ class _CameraViewState extends State<CameraView> {
   double calories = 0;
   int successCount = 0;
   List<Record> results = [];
+  bool isStreamingPaused = false;
+
   void sendMessagetoWatch(String msg) {
     final message = {'data': msg};
     watch.sendMessage(message);
@@ -90,7 +95,6 @@ class _CameraViewState extends State<CameraView> {
     tts.setPitch(0.9);
     _initialize();
     initPlatformState();
-    sendMessagetoWatch(widget.name);
     watch.messageStream.listen((e) {
       List<dynamic> parsedJson = jsonDecode(e['data']);
       exerciseTime = parsedJson[0]['time'];
@@ -152,21 +156,73 @@ class _CameraViewState extends State<CameraView> {
 
   Widget _switchLiveCameraToggle() => Positioned(
         bottom: 16,
-        right: 16,
-        child: SizedBox(
-          height: 50.0,
-          width: 50.0,
-          child: FloatingActionButton(
-            heroTag: Object(),
-            onPressed: _switchLiveCamera,
-            // backgroundColor: Colors.black54,
-            child: Icon(
-              Platform.isIOS
-                  ? Icons.flip_camera_ios_outlined
-                  : Icons.flip_camera_android_outlined,
-              size: 25,
+        right: 25,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(10),
+                backgroundColor: const Color(boxColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              onPressed: () {
+                // Pause streaming when dialog is shown
+                setState(() {
+                  isStreamingPaused = true;
+                });
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) => WorkOutExplain(
+                    workout: widget.workout,
+                    pop: true,
+                  ),
+                ).then((_) {
+                  setState(() {
+                    isStreamingPaused = false;
+                  });
+                });
+              },
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(speakerIcon, color: Color(fontYellowColor), size: 40),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "설명 다시 듣기",
+                        style: TextStyle(
+                            fontSize: 36,
+                            color: Color(fontYellowColor),
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            const SizedBox(width: 16),
+            SizedBox(
+              height: 50.0,
+              width: 50.0,
+              child: FloatingActionButton(
+                backgroundColor: const Color(boxColor),
+                heroTag: Object(),
+                onPressed: _switchLiveCamera,
+                // backgroundColor: Colors.black54,
+                child: Icon(
+                    Platform.isIOS
+                        ? Icons.flip_camera_ios_outlined
+                        : Icons.flip_camera_android_outlined,
+                    size: 25,
+                    color: const Color(fontYellowColor)),
+              ),
+            ),
+          ],
         ),
       );
 
@@ -224,8 +280,12 @@ class _CameraViewState extends State<CameraView> {
           inputImage.metadata!.rotation,
           CameraLensDirection.front,
         );
-        String result = cal.exercise(poses[0], widget.name);
-
+        String result = cal.exercise(poses[0], widget.workout.name);
+        if (result == "운동을 시작합니다.") {
+          sendMessagetoWatch(jsonEncode([
+            {'exercise': widget.workout.name, 'weight': widget.weight}
+          ]));
+        }
         if (!isSpeaking) {
           isSpeaking = true;
           await tts.speak(result).then((_) {
@@ -252,8 +312,11 @@ class _CameraViewState extends State<CameraView> {
   Future _stopLiveFeed() async {
     await _controller?.stopImageStream();
     await _controller?.dispose();
-
-    sendMessagetoWatch('stop');
+    if (_paired == true) {
+      sendMessagetoWatch('stop');
+    } else {
+      finishExercise();
+    }
     _controller = null;
   }
 
@@ -323,18 +386,41 @@ class _CameraViewState extends State<CameraView> {
     successCount = cal.success;
     //심박수 데이터, 운동시간, 칼로리
     if (exerciseTime != 0) {
-      Record record = Record(null, successCount, exerciseTime, widget.name,
-          DateTime.now(), successCount, calories, heartRate);
+      Record record = Record(
+          null,
+          successCount,
+          exerciseTime,
+          widget.workout.name,
+          DateTime.now(),
+          successCount,
+          calories,
+          heartRate);
+
+      results.add(record);
+      setState(() {});
+    } else {
+      Record record = Record(
+          null,
+          successCount,
+          widget.count * 2,
+          widget.workout.name,
+          DateTime.now(),
+          successCount,
+          calories,
+          heartRate);
 
       results.add(record);
       setState(() {});
     }
+    saveRecord();
   }
 
   saveRecord() async {
     //   //서버로 저장
+
+    // final url = Uri.parse('http://34.64.89.205/api/v1/exercise/record/${widget.workout.exerciseId}')
     final url = Uri.parse(
-        'http://34.64.89.205/api/v1/exercise/record/${widget.exerciseId}');
+        'http://34.64.89.205/api/v1/exercise/record/${widget.workout.exerciseId}');
 
     var response = await http.post(url,
         headers: {"Content-Type": "application/json; charset=UTF-8"},
@@ -346,11 +432,13 @@ class _CameraViewState extends State<CameraView> {
           "caloriesBurnedSum": calories,
           "averageHeartRate": heartRate
         }));
-
+    print(response.statusCode);
     if (response.statusCode == 200) {
       var data = jsonDecode(response.body);
+
+      goToResult();
     }
-    throw Error();
+    //throw Error();
   }
 
   void goToResult() {
@@ -375,9 +463,15 @@ class _CameraViewState extends State<CameraView> {
   @override
   Widget build(BuildContext context) {
     if (results.isEmpty) {
-      return Scaffold(
-        body: _liveFeedBody(),
-      );
+      if (isStreamingPaused == false) {
+        return Scaffold(
+          body: _liveFeedBody(),
+        );
+      } else {
+        return Scaffold(
+          body: Container(),
+        );
+      }
     } else {
       return WorkoutResultPage(results: results);
     }
