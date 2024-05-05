@@ -1,7 +1,9 @@
 import 'package:beyond_vision/core/constants.dart';
 import 'package:beyond_vision/ui/setting/setting.dart';
 import 'package:beyond_vision/ui/setting/widgets/delete_account.dart';
+import 'package:beyond_vision/ui/setting/widgets/edit_alarm.dart';
 import 'package:beyond_vision/ui/setting/widgets/edit_goal.dart';
+import 'package:beyond_vision/ui/setting/widgets/edit_weight.dart';
 import 'package:beyond_vision/ui/setting/widgets/logout.dart';
 import 'package:flutter/material.dart';
 
@@ -34,6 +36,14 @@ class SettingBox extends StatelessWidget {
             showDialog(
                 context: context,
                 builder: (BuildContext context) => const LogOut());
+          } else if (name == "몸무게\n수정") {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) => const EditWeight());
+          } else if (name == "알람 설정") {
+            showDialog(
+                context: context,
+                builder: (BuildContext context) => const EditAlarm());
           } else {
             Navigator.push(context,
                 MaterialPageRoute(builder: (context) => const Setting()));

@@ -18,11 +18,11 @@ class _CalendarState extends State<Calendar> {
   Widget build(BuildContext context) {
     DateTime selectedDay = widget.provider.selectedDay;
     AuthProvider auth = Provider.of<AuthProvider>(context);
+    DateProvider date = Provider.of<DateProvider>(context);
 
     bool getEventsForDay(List<double> records, int day) {
       if (records.length < day) {
         if (records[day] >= auth.goal) {
-          print("왜");
           return true;
         }
       }
@@ -38,6 +38,7 @@ class _CalendarState extends State<Calendar> {
         //       widget.provider.thisWeekExerciseTime, day.weekday);
         //   return isSuccess ? [true] : [];
         // },
+
         daysOfWeekStyle:
             const DaysOfWeekStyle(weekdayStyle: TextStyle(color: Colors.white)),
         calendarStyle: const CalendarStyle(
@@ -62,15 +63,38 @@ class _CalendarState extends State<Calendar> {
         onDaySelected: widget.provider.updateSelectedDay,
         onPageChanged: widget.provider.moveWeek,
         selectedDayPredicate: (day) => isSameDay(day, selectedDay),
-        headerStyle: const HeaderStyle(
-          titleTextStyle: TextStyle(color: Colors.white, fontSize: 24),
+        headerStyle: HeaderStyle(
+          titleTextFormatter: (yearMonth, Locale) {
+            int year = yearMonth.year;
+            int month = yearMonth.month;
+            // 한국어로 월을 표시하는 형식으로 제목을 반환합니다.
+            return '$year년 $month월';
+          },
+          titleTextStyle: const TextStyle(color: Colors.white, fontSize: 24),
           titleCentered: true,
           formatButtonVisible: false,
-          leftChevronIcon: Icon(Icons.chevron_left, color: Colors.white),
-          rightChevronIcon: Icon(Icons.chevron_right, color: Colors.white),
+          leftChevronIcon: const Icon(Icons.chevron_left, color: Colors.white),
+          rightChevronIcon:
+              const Icon(Icons.chevron_right, color: Colors.white),
         ),
-        locale: 'ko-KR',
         calendarBuilders: CalendarBuilders(
+          markerBuilder: (context, day, events) {
+            for (var record in date.records) {
+              if ((record.exerciseTime! / 60) >= auth.goal &&
+                  isSameDay(record.exerciseDate!, day)) {
+                return Padding(
+                  padding: const EdgeInsets.only(top: 30.0),
+                  child: Container(
+                      width: 10,
+                      decoration: const BoxDecoration(
+                        color: Color(fontYellowColor),
+                        shape: BoxShape.circle,
+                      )),
+                );
+              }
+            }
+            return null;
+          },
           dowBuilder: (context, day) {
             switch (day.weekday) {
               case 1:

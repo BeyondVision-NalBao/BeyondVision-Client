@@ -11,15 +11,21 @@ class RecordService {
     final url = Uri.parse('$baseUrl/record/$memberId');
 
     final response = await http.get(url);
-
     if (response.statusCode == 200) {
       final List<dynamic> records = jsonDecode(utf8.decode(response.bodyBytes));
 
       for (var record in records) {
         DateTime dateTime = DateTime.parse(record['exerciseDate']);
 
-        recordInstance.add(Record(record["recordId"], record["exerciseCount"],
-            record["exerciseTime"], record["exerciseName"], dateTime));
+        recordInstance.add(Record(
+            record["recordId"],
+            record["exerciseCount"],
+            record["exerciseTime"],
+            record["exerciseName"],
+            dateTime,
+            record["successCount"],
+            record["caloriesBurnedSum"],
+            record["averageHeartRate"]));
       }
       return recordInstance;
     }

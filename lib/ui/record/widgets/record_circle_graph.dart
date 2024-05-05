@@ -61,7 +61,7 @@ class RecordCircle extends StatelessWidget {
         case 1:
           return PieChartSectionData(
             color: const Color(blurYellowColor),
-            value: provider.todayExerciseTime > 30
+            value: provider.todayExerciseTime > goal
                 ? 0
                 : 1 - (provider.todayExerciseTime / goal),
             showTitle: false,

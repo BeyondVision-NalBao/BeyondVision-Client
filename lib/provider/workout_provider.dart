@@ -46,32 +46,24 @@ class WorkoutProvider extends ChangeNotifier {
     }
   }
 
-  void findWorkout(String name) {
+  WorkOut findWorkout(String name) {
     if (name == "스쿼트") {
-      workoutEx = workoutBottom[0];
+      return workoutBottom[0];
     } else if (name == "숄더프레스") {
-      workoutEx = workoutTop[0];
+      return workoutTop[0];
     } else if (name == "레터럴레이즈") {
-      workoutEx = workoutTop[1];
+      return workoutTop[1];
     } else if (name == "헌드레드") {
-      workoutEx = workoutCore[1];
+      return workoutCore[1];
     } else if (name == "플랭크") {
-      workoutEx = workoutCore[0];
+      return workoutCore[0];
     } else if (name == "프론트레이즈") {
-      workoutEx = workoutTop[2];
+      return workoutTop[2];
     } else if (name == "제트업") {
-      workoutEx = workoutBottom[1];
+      return workoutBottom[1];
     } else {
       //브릿지
-      workoutEx = workoutCore[2];
+      return workoutCore[2];
     }
-  }
-
-  void getWorkoutResult(WorkoutResult result) {
-    results.add(result);
-  }
-
-  void sumTime(int time) {
-    sum += time;
   }
 }

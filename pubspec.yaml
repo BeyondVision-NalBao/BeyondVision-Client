@@ -26,10 +26,16 @@ dependencies:
   dio: ^5.4.0
   image:
   wakelock: ^0.6.2
-  tflite_flutter:
   google_mlkit_pose_detection: ^0.10.0
   image_picker:
-
+  google_mlkit_commons:
+  change_app_package_name: ^1.1.0
+  watch_connectivity:
+  time_picker_spinner:
+  flutter_local_notifications:
+  timezone: 
+  permission_handler:
+  youtube_player_flutter:
 
 dev_dependencies:
   flutter_test:

@@ -20,6 +20,7 @@ class RecordPage extends StatelessWidget {
     RecordService recordService = RecordService();
     AuthProvider auth = Provider.of<AuthProvider>(context);
     TtsService tts = TtsService();
+
     return FutureBuilder(
         future: recordService.getAllRecord(auth.memberId),
         builder: (context, snapshot) {

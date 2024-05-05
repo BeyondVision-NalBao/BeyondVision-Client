@@ -40,7 +40,7 @@ class _SetCountState extends State<SetCount> {
         padding: const EdgeInsets.all(20),
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           const Text(
-            "운동 횟수 또는\n시간을 설정하세요",
+            "운동 횟수 또는\n시간(초)을 설정하세요\n(1세트 기준)",
             textAlign: TextAlign.center,
             style: TextStyle(
                 color: Color(fontYellowColor),

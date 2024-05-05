@@ -6,6 +6,9 @@ class DateProvider extends ChangeNotifier {
   DateTime selectedDay = DateTime.now();
   int selectedIndex = -1;
   double todayExerciseTime = 0.0;
+  int todayHeartRate = 0;
+  double average = 0.0;
+  double todayCalories = 0.0;
   List<double> thisWeekExerciseTime = [
     0.0,
     0.0,
@@ -51,6 +54,9 @@ class DateProvider extends ChangeNotifier {
     thisWeekOnlyResult = [];
     selectedDay = newDay;
     selectedIndex = selectedDay.weekday - 1;
+    todayHeartRate = 0;
+    average = 0.0;
+    todayCalories = 0.0;
 
     //오늘 기록
     todayRecords = records
@@ -60,7 +66,10 @@ class DateProvider extends ChangeNotifier {
     for (int i = 0; i < todayRecords.length; i++) {
       todayExerciseTime +=
           double.parse((todayRecords[i].exerciseTime! / 60).toStringAsFixed(1));
+      todayCalories += todayRecords[i].caloriesBurnedSum!;
+      todayHeartRate += todayRecords[i].averageHeartRate!;
     }
+    average = todayHeartRate / todayRecords.length;
 
     //이번주 기록
     int mondayOffset = selectedDay.weekday - DateTime.monday;
@@ -73,7 +82,8 @@ class DateProvider extends ChangeNotifier {
           .where((record) => isSameDay(record.exerciseDate, currentDate))
           .toList();
       if (record.isEmpty) {
-        thisWeek.add([Record(null, null, null, null, currentDate)]);
+        thisWeek.add(
+            [Record(null, null, null, null, currentDate, null, null, null)]);
       } else {
         thisWeek.add(record);
         thisWeekOnlyResult.add(record);
@@ -84,8 +94,8 @@ class DateProvider extends ChangeNotifier {
       double sum = 0.0;
       for (int j = 0; j < thisWeek[i].length; j++) {
         if (thisWeek[i][j].exerciseTime != null) {
-          sum += double.parse(
-              (thisWeek[i][j].exerciseTime! / 60).toStringAsFixed(1));
+          sum +=
+              double.parse((thisWeek[i][j].exerciseTime!).toStringAsFixed(1));
         }
       }
       thisWeekExerciseTime.add(sum);

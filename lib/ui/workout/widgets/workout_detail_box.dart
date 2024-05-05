@@ -50,6 +50,7 @@ class WorkOutDetail extends StatelessWidget {
                     fontWeight: FontWeight.bold),
               ),
             ),
+            //Text(workout.difficulty.toString()),
             const Icon(Icons.arrow_forward_ios, color: Colors.white)
           ]),
         ),

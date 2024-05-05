@@ -7,6 +7,7 @@ class User {
   late int? age;
   late String? gender;
   late int exerciseGoal = 0;
+  late int? weight;
   final bool? isNewMember;
 
   User(
@@ -29,6 +30,7 @@ class User {
         age = json['age'],
         gender = json['gender'],
         exerciseGoal = json['exerciseGoal'],
+        weight = json['weight'],
         isNewMember = json['isNewMember'];
 
   Map<String, dynamic> toJson() => {
@@ -40,6 +42,7 @@ class User {
         'age': age,
         'gender': gender,
         'exerciseGoal': exerciseGoal,
+        'weight': weight,
         'isNewMember': isNewMember,
       };
 }

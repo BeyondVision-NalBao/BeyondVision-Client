@@ -2,7 +2,9 @@ import 'package:beyond_vision/provider/date_provider.dart';
 import 'package:beyond_vision/provider/login_provider.dart';
 import 'package:beyond_vision/provider/routine_provider.dart';
 import 'package:beyond_vision/provider/workout_provider.dart';
+import 'package:beyond_vision/service/alarm_service.dart';
 import 'package:beyond_vision/service/user_service.dart';
+import 'package:beyond_vision/ui/watch_connect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:beyond_vision/service/date_service.dart';
 import 'package:beyond_vision/ui/home/home.dart';
@@ -11,8 +13,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
+  final notificationService = NotificationService();
+  // Flutter 엔진 초기화
+  WidgetsFlutterBinding.ensureInitialized();
+  // 로컬 푸시 알림 초기화
+  await notificationService.init();
+  runApp(const MyApp());
   initializeDateFormatting().then((_) => runApp(const MyApp()));
 }
 
@@ -29,6 +37,7 @@ class _MyAppState extends State<MyApp> {
   bool isLogined = false;
   int memberId = -1;
   int exerciseGoal = 0;
+  int weight = 70;
 
   checkLogin() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -38,6 +47,7 @@ class _MyAppState extends State<MyApp> {
         setState(() {
           memberId = prefs.getInt("memberId")!;
           exerciseGoal = prefs.getInt("exerciseGoal")!;
+          //weight = prefs.getInt("weight")!;
           isLogined = true;
         });
       }
@@ -65,7 +75,10 @@ class _MyAppState extends State<MyApp> {
           title: 'Beyond Vision',
           home: isLogined
               ? HomePage(
-                  memberId: memberId, exerciseGoal: exerciseGoal, isFirst: true)
+                  memberId: memberId,
+                  exerciseGoal: exerciseGoal,
+                  weight: weight,
+                  isFirst: true)
               : const LoginPage(),
           debugShowCheckedModeBanner: false,
           builder: (context, child) {
@@ -75,5 +88,6 @@ class _MyAppState extends State<MyApp> {
                 child: child!);
           },
         ));
+    //home: MyAndroidApp()));
   }
 }

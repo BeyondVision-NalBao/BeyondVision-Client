@@ -117,8 +117,9 @@ class _RoutineDetailState extends State<RoutineDetail> {
                       context,
                       MaterialPageRoute(
                         builder: (context) => CameraView(
-                          exercises: items,
-                        ),
+                            exercises: items,
+                            memberId: auth.memberId,
+                            weight: auth.weight),
                       ),
                     );
                   },

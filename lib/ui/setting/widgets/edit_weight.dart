@@ -4,14 +4,14 @@ import 'package:beyond_vision/service/user_service.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-class EditGoal extends StatefulWidget {
-  const EditGoal({super.key});
+class EditWeight extends StatefulWidget {
+  const EditWeight({super.key});
 
   @override
-  State<EditGoal> createState() => _EditGoalState();
+  State<EditWeight> createState() => _EditWeightState();
 }
 
-class _EditGoalState extends State<EditGoal> {
+class _EditWeightState extends State<EditWeight> {
   late TextEditingController _count;
 
   @override
@@ -69,14 +69,15 @@ class _EditGoalState extends State<EditGoal> {
         child: SingleChildScrollView(
           child: Column(mainAxisSize: MainAxisSize.min, children: [
             const Text(
-              "운동 목표 수정",
+              "몸무게\n수정",
+              textAlign: TextAlign.center,
               style: TextStyle(
                   color: Color(fontYellowColor),
                   fontSize: 40,
                   fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 30),
-            const Text("운동 횟수 또는 시간을 \n수정하세요\n(분 단위로 입력)",
+            const Text("현재 몸무게를 입력하세요\n",
                 textAlign: TextAlign.center,
                 style: TextStyle(color: Colors.white, fontSize: 24)),
             const SizedBox(height: 30),
@@ -90,9 +91,9 @@ class _EditGoalState extends State<EditGoal> {
             const SizedBox(height: 30),
             TextButton(
                 onPressed: () async {
-                  int isSuccess = await userService.editUserInfo(
-                      auth.goal, int.parse(_count.text), auth.memberId);
-                  auth.goal = isSuccess;
+                  int isSuccess = await userService.editUserWeight(
+                      auth.weight, int.parse(_count.text), auth.memberId);
+                  auth.weight = isSuccess;
                   Navigator.pop(context);
                   _showDialog();
                 },

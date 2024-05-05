@@ -1,9 +1,12 @@
 import 'package:beyond_vision/core/constants.dart';
 import 'package:beyond_vision/model/workout_model.dart';
-import 'package:beyond_vision/ui/workout/widgets/workout_camera_view.dart';
+import 'package:beyond_vision/provider/login_provider.dart';
+import 'package:beyond_vision/ui/workout/widgets/camera_flutter.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:provider/provider.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class WorkOutExplain extends StatefulWidget {
   final WorkOut workout;
@@ -16,14 +19,34 @@ class WorkOutExplain extends StatefulWidget {
 
 class _WorkOutExplainState extends State<WorkOutExplain> {
   final FlutterTts tts = FlutterTts();
-
+  late YoutubePlayerController _controller;
   bool isListening = false;
   int isResult = 1;
   String networkUrl = "";
+  String description = "";
 
   @override
   void initState() {
+    int endIndex = widget.workout.description.length - 11;
+    description = widget.workout.description
+        .replaceAll('\\n', '\n')
+        .substring(0, endIndex);
+    // 맨 뒤에서부터 11번째 글자까지의 인덱스
+    String youtube = widget.workout.description.substring(endIndex);
+    String videoId = YoutubePlayer.convertUrlToId(youtube)!;
+
     // TODO: implement initState
+
+    _controller = YoutubePlayerController(
+        initialVideoId: videoId,
+        flags: const YoutubePlayerFlags(
+            mute: false,
+            autoPlay: false,
+            disableDragSeek: false,
+            loop: false,
+            isLive: false,
+            forceHD: false,
+            enableCaption: true));
     tts.setSpeechRate(0.4);
     tts.setPitch(0.9);
     tts.speak(widget.workout.description);
@@ -40,6 +63,8 @@ class _WorkOutExplainState extends State<WorkOutExplain> {
 
   @override
   Widget build(BuildContext context) {
+    AuthProvider auth = Provider.of<AuthProvider>(context);
+
     return Dialog(
       backgroundColor: const Color(boxColor),
       elevation: 5,
@@ -64,7 +89,11 @@ class _WorkOutExplainState extends State<WorkOutExplain> {
                     child: Column(
                       children: [
                         Image.network(networkUrl),
-                        Text(widget.workout.description,
+                        YoutubePlayerBuilder(
+                            player: YoutubePlayer(controller: _controller),
+                            builder: (context, player) =>
+                                Container(child: player)),
+                        Text(description,
                             textAlign: TextAlign.center,
                             style: const TextStyle(
                                 color: Colors.white, fontSize: 28)),
@@ -86,12 +115,14 @@ class _WorkOutExplainState extends State<WorkOutExplain> {
                           TextButton(
                               onPressed: () {
                                 Navigator.pop(context);
-                                // Navigator.push(
-                                //     context,
-                                //     MaterialPageRoute(
-                                //         builder: (context) => CameraView(
-                                //             name: widget.workout.name,
-                                //             count: 30)));
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => CameraView(
+                                            workout: widget.workout,
+                                            memberId: auth.memberId,
+                                            weight: auth.weight,
+                                            count: 30)));
                               },
                               child: const Text("확인 후 운동하기",
                                   style: TextStyle(

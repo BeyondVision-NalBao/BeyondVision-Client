@@ -21,7 +21,7 @@ class _LoginPageState extends State<LoginPage> {
     // TODO: implement initState
     TtsService ttsService = TtsService();
     FlutterTts tts = FlutterTts();
-
+    tts.setLanguage('ko-KR');
     tts.setSpeechRate(0.4);
     tts.setPitch(0.9);
     tts.speak(ttsService.InitExplain);
@@ -32,6 +32,7 @@ class _LoginPageState extends State<LoginPage> {
     try {
       final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
       final UserService userService = UserService();
+
       if (googleUser != null) {
         final GoogleSignInAuthentication googleAuth =
             await googleUser.authentication;
@@ -60,32 +61,33 @@ class _LoginPageState extends State<LoginPage> {
         }
       }
     } catch (error) {
-      showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          Future.delayed(const Duration(seconds: 2), () {
-            Navigator.pop(context);
-          });
+      // showDialog(
+      //   context: context,
+      //   builder: (BuildContext context) {
+      //     Future.delayed(const Duration(seconds: 2), () {
+      //       Navigator.pop(context);
+      //     });
 
-          return AlertDialog(
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0)),
-            backgroundColor: const Color(boxColor), // 원하는 배경 색상으로 변경
-            content: const SizedBox(
-              height: 100,
-              child: Center(
-                child: Text(
-                  "로그인 오류",
-                  style: TextStyle(
-                      color: Color(fontYellowColor),
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-            ),
-          );
-        },
-      );
+      //     return AlertDialog(
+      //       shape: RoundedRectangleBorder(
+      //           borderRadius: BorderRadius.circular(8.0)),
+      //       backgroundColor: const Color(boxColor), // 원하는 배경 색상으로 변경
+      //       content: const SizedBox(
+      //         height: 100,
+      //         child: Center(
+      //           child: Text(
+      //             "로그인 오류",
+      //             style: TextStyle(
+      //                 color: Color(fontYellowColor),
+      //                 fontSize: 40,
+      //                 fontWeight: FontWeight.bold),
+      //           ),
+      //         ),
+      //       ),
+      //     );
+      //   },
+      // );
+      print(error);
     }
   }
 

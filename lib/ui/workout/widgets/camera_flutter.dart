@@ -2,16 +2,13 @@ import 'dart:io';
 
 import 'package:beyond_vision/ml/calculate_degree.dart';
 import 'package:beyond_vision/model/record_model.dart';
-import 'package:beyond_vision/model/routine_model.dart';
 import 'package:beyond_vision/model/workout_model.dart';
-import 'package:beyond_vision/provider/workout_provider.dart';
 import 'package:beyond_vision/ui/workout/widgets/workout_result.dart';
 import 'package:camera/camera.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:google_mlkit_pose_detection/google_mlkit_pose_detection.dart';
-import 'package:provider/provider.dart';
 import 'package:wakelock/wakelock.dart';
 import 'package:watch_connectivity/watch_connectivity.dart';
 import 'package:http/http.dart' as http;
@@ -28,7 +25,8 @@ class CameraView extends StatefulWidget {
       this.onDetectorViewModeChanged,
       this.onCameraLensDirectionChanged,
       this.initialCameraLensDirection = CameraLensDirection.front,
-      required this.exercises,
+      required this.workout,
+      required this.count,
       required this.memberId,
       required this.weight})
       : super(key: key);
@@ -37,7 +35,8 @@ class CameraView extends StatefulWidget {
   final VoidCallback? onDetectorViewModeChanged;
   final Function(CameraLensDirection direction)? onCameraLensDirectionChanged;
   final CameraLensDirection initialCameraLensDirection;
-  final List<RoutineExercise> exercises;
+  final WorkOut workout;
+  final int count;
   final int memberId;
   final int weight;
 
@@ -73,15 +72,15 @@ class _CameraViewState extends State<CameraView> {
   double calories = 0;
   int successCount = 0;
   List<Record> results = [];
-  bool isPaused = false;
-  int index = 0;
+  bool isStreamingPaused = false;
+
   void sendMessagetoWatch(String msg) {
+    print(msg);
     final message = {'data': msg};
     watch.sendMessage(message);
     // setState(() => _log.add('Sent message: $message'));
   }
 
-  int exercise = 0;
   final PoseDetector poseDetector = PoseDetector(
     options: PoseDetectorOptions(
         mode: PoseDetectionMode.single, model: PoseDetectionModel.base),
@@ -91,12 +90,13 @@ class _CameraViewState extends State<CameraView> {
   void initState() {
     Wakelock.enable();
     super.initState();
+    cal.setCount(widget.count);
+    print(cal.count);
     tts.setLanguage('ko-KR');
     tts.setSpeechRate(0.8);
     tts.setPitch(0.9);
     _initialize();
     initPlatformState();
-
     watch.messageStream.listen((e) {
       List<dynamic> parsedJson = jsonDecode(e['data']);
       exerciseTime = parsedJson[0]['time'];
@@ -105,16 +105,6 @@ class _CameraViewState extends State<CameraView> {
       finishExercise();
       setState(() {});
     });
-  }
-
-  startNewExercise() {
-    cal.setCount(widget.exercises[index].exerciseCount);
-    sendMessagetoWatch(jsonEncode([
-      {
-        'exercise': widget.exercises[index].exerciseName,
-        'weight': widget.weight
-      }
-    ]));
   }
 
   void initPlatformState() async {
@@ -136,6 +126,8 @@ class _CameraViewState extends State<CameraView> {
     }
     if (_cameraIndex != -1) {
       setState(() {});
+      initPlatformState();
+      print(_paired);
       _startLiveFeed();
     }
   }
@@ -168,21 +160,73 @@ class _CameraViewState extends State<CameraView> {
 
   Widget _switchLiveCameraToggle() => Positioned(
         bottom: 16,
-        right: 16,
-        child: SizedBox(
-          height: 50.0,
-          width: 50.0,
-          child: FloatingActionButton(
-            heroTag: Object(),
-            onPressed: _switchLiveCamera,
-            // backgroundColor: Colors.black54,
-            child: Icon(
-              Platform.isIOS
-                  ? Icons.flip_camera_ios_outlined
-                  : Icons.flip_camera_android_outlined,
-              size: 25,
+        right: 25,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                padding: const EdgeInsets.all(10),
+                backgroundColor: const Color(boxColor),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(30),
+                ),
+              ),
+              onPressed: () {
+                // Pause streaming when dialog is shown
+                setState(() {
+                  isStreamingPaused = true;
+                });
+                showDialog(
+                  context: context,
+                  builder: (BuildContext context) => WorkOutExplain(
+                    workout: widget.workout,
+                    pop: true,
+                  ),
+                ).then((_) {
+                  setState(() {
+                    isStreamingPaused = false;
+                  });
+                });
+              },
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Icon(speakerIcon, color: Color(fontYellowColor), size: 40),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Padding(
+                      padding: EdgeInsets.all(8.0),
+                      child: Text(
+                        "설명 다시 듣기",
+                        style: TextStyle(
+                            fontSize: 36,
+                            color: Color(fontYellowColor),
+                            fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
+            const SizedBox(width: 16),
+            SizedBox(
+              height: 50.0,
+              width: 50.0,
+              child: FloatingActionButton(
+                backgroundColor: const Color(boxColor),
+                heroTag: Object(),
+                onPressed: _switchLiveCamera,
+                // backgroundColor: Colors.black54,
+                child: Icon(
+                    Platform.isIOS
+                        ? Icons.flip_camera_ios_outlined
+                        : Icons.flip_camera_android_outlined,
+                    size: 25,
+                    color: const Color(fontYellowColor)),
+              ),
+            ),
+          ],
         ),
       );
 
@@ -217,7 +261,9 @@ class _CameraViewState extends State<CameraView> {
         }
       });
       initPlatformState();
-      setState(() {});
+      setState(() {
+        isStreamingPaused = false;
+      });
     });
   }
 
@@ -240,13 +286,17 @@ class _CameraViewState extends State<CameraView> {
           inputImage.metadata!.rotation,
           CameraLensDirection.front,
         );
-        String result =
-            cal.exercise(poses[0], widget.exercises[index].exerciseName);
+        String result = cal.exercise(poses[0], widget.workout.name);
+        if (result == "운동을 시작합니다.") {
+          sendMessagetoWatch(jsonEncode([
+            {'exercise': widget.workout.name, 'weight': widget.weight}
+          ]));
+        }
 
-        if (!isSpeaking) {
+        if (isSpeaking == false) {
           isSpeaking = true;
           await tts.speak(result).then((_) {
-            isSpeaking = false; // 말하기가 끝나면 상태 업데이트
+            isSpeaking = false;
           });
         }
         setState(() {
@@ -269,8 +319,15 @@ class _CameraViewState extends State<CameraView> {
   Future _stopLiveFeed() async {
     await _controller?.stopImageStream();
     await _controller?.dispose();
+    setState(() {
+      isStreamingPaused = true;
+    });
+    initPlatformState();
 
-    sendMessagetoWatch('stop');
+    if (cal.count == 0) {
+      sendMessagetoWatch('stop');
+    }
+
     _controller = null;
   }
 
@@ -344,7 +401,20 @@ class _CameraViewState extends State<CameraView> {
           null,
           successCount,
           exerciseTime,
-          widget.exercises[index].exerciseName,
+          widget.workout.name,
+          DateTime.now(),
+          successCount,
+          calories,
+          heartRate);
+
+      results.add(record);
+      setState(() {});
+    } else {
+      Record record = Record(
+          null,
+          successCount,
+          widget.count * 5,
+          widget.workout.name,
           DateTime.now(),
           successCount,
           calories,
@@ -353,6 +423,7 @@ class _CameraViewState extends State<CameraView> {
       results.add(record);
       setState(() {});
     }
+    saveRecord();
   }
 
   saveRecord() async {
@@ -360,30 +431,47 @@ class _CameraViewState extends State<CameraView> {
 
     // final url = Uri.parse('http://34.64.89.205/api/v1/exercise/record/${widget.workout.exerciseId}')
     final url = Uri.parse(
-        'https://403e-1-209-144-250.ngrok-free.app/api/v1/exercise/record/$exercise');
+        'http://34.64.89.205/api/v1/exercise/record/${widget.workout.exerciseId}');
 
-    var response = await http.post(url,
-        headers: {"Content-Type": "application/json; charset=UTF-8"},
-        body: json.encode({
-          "exerciseTime": exerciseTime,
-          "exerciseCount": widget.exercises[index].exerciseCount,
-          "memberId": widget.memberId,
-          "successCount": successCount,
-          "caloriesBurnedSum": calories,
-          "averageHeartRate": heartRate
-        }));
+    late var response;
 
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
-      if (index == widget.exercises.length) {
+    if (exerciseTime != 0) {
+      var response = await http.post(url,
+          headers: {"Content-Type": "application/json; charset=UTF-8"},
+          body: json.encode({
+            "exerciseTime": exerciseTime,
+            "exerciseCount": widget.count,
+            "memberId": widget.memberId,
+            "successCount": successCount,
+            "caloriesBurnedSum": calories,
+            "averageHeartRate": heartRate
+          }));
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+
         goToResult();
-      } else {
-        cal.success = 0;
-        index++;
-        setState(() {});
+      }
+    } else {
+      var response = await http.post(url,
+          headers: {"Content-Type": "application/json; charset=UTF-8"},
+          body: json.encode({
+            "exerciseTime": widget.count * 2,
+            "exerciseCount": widget.count,
+            "memberId": widget.memberId,
+            "successCount": successCount,
+            "caloriesBurnedSum": calories,
+            "averageHeartRate": heartRate
+          }));
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+
+        goToResult();
       }
     }
-    throw Error();
+
+    //throw Error();
   }
 
   void goToResult() {
@@ -396,78 +484,28 @@ class _CameraViewState extends State<CameraView> {
                 )));
   }
 
-  void setExerciseId(WorkoutProvider provider) {
-    WorkOut workout =
-        provider.findWorkout(widget.exercises[index].exerciseName);
-    exercise = workout.exerciseId;
-  }
-
   @override
   void dispose() {
     // 카메라 컨트롤러 해제
     Wakelock.disable(); // Wakelock 비활성화
     tts.stop();
-
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    WorkoutProvider workoutProvider = Provider.of<WorkoutProvider>(context);
-    setExerciseId(workoutProvider);
-
-    return Scaffold(
-      body: Column(
-        children: [
-          isPaused == false ? _liveFeedBody() : Container(),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              padding: const EdgeInsets.all(10),
-              backgroundColor: const Color(boxColor),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
-              ),
-            ),
-            onPressed: () {
-              // Pause streaming when dialog is shown
-              setState(() {
-                isPaused = true;
-              });
-              showDialog(
-                context: context,
-                builder: (BuildContext context) => WorkOutExplain(
-                  workout: workoutProvider
-                      .findWorkout(widget.exercises[index].exerciseName),
-                  pop: true,
-                ),
-              ).then((_) {
-                setState(() {
-                  isPaused = false;
-                });
-              });
-            },
-            child: const Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Icon(speakerIcon, color: Color(fontYellowColor), size: 40),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Padding(
-                    padding: EdgeInsets.all(8.0),
-                    child: Text(
-                      "설명 다시 듣기",
-                      style: TextStyle(
-                          fontSize: 36,
-                          color: Color(fontYellowColor),
-                          fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
+    if (results.isEmpty) {
+      if (isStreamingPaused == false) {
+        return Scaffold(
+          body: _liveFeedBody(),
+        );
+      } else {
+        return Scaffold(
+          body: Container(),
+        );
+      }
+    } else {
+      return WorkoutResultPage(results: results);
+    }
   }
 }

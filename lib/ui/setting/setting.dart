@@ -19,18 +19,22 @@ class Setting extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const SizedBox(height: 200),
+            const SizedBox(height: 160),
             SizedBox(
               height: MediaQuery.of(context).size.height * 0.5,
               child: GridView.count(
                 crossAxisCount: 2,
                 children: const [
                   SettingBox(name: "운동 목표\n수정"),
+                  SettingBox(name: "몸무게\n수정"),
+                  SettingBox(
+                    name: "알람 설정",
+                  ),
                   SettingBox(name: "로그아웃"),
                 ],
               ),
             ),
-            const SizedBox(height: 30),
+            const SizedBox(height: 50),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: TextButton(
