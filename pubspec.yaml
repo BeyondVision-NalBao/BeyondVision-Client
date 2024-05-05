@@ -33,6 +33,9 @@ dependencies:
   watch_connectivity:
   time_picker_spinner:
   flutter_local_notifications:
+  timezone: 
+  permission_handler:
+  youtube_player_flutter:
 
 dev_dependencies:
   flutter_test:

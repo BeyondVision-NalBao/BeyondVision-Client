@@ -29,7 +29,7 @@ class WorkOutService {
   }
 
   Future<WorkOut> getRecommend(int memberId) async {
-    final url = Uri.parse('$baseUrl/recommand/$memberId');
+    final url = Uri.parse('$baseUrl/recommand/1');
 
     final response = await http.get(url);
 

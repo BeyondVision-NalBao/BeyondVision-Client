@@ -2,6 +2,7 @@ import 'package:beyond_vision/provider/date_provider.dart';
 import 'package:beyond_vision/provider/login_provider.dart';
 import 'package:beyond_vision/provider/routine_provider.dart';
 import 'package:beyond_vision/provider/workout_provider.dart';
+import 'package:beyond_vision/service/alarm_service.dart';
 import 'package:beyond_vision/service/user_service.dart';
 import 'package:beyond_vision/ui/watch_connect.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -12,9 +13,14 @@ import 'package:flutter/material.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:provider/provider.dart';
 
-void main() {
+void main() async {
   WidgetsBinding widgetsBinding = WidgetsFlutterBinding.ensureInitialized();
-
+  final notificationService = NotificationService();
+  // Flutter 엔진 초기화
+  WidgetsFlutterBinding.ensureInitialized();
+  // 로컬 푸시 알림 초기화
+  await notificationService.init();
+  runApp(const MyApp());
   initializeDateFormatting().then((_) => runApp(const MyApp()));
 }
 

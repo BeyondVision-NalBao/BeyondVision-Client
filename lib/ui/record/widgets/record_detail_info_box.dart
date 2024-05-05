@@ -10,6 +10,13 @@ class DetailBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    String getSum(int time) {
+      int min = time ~/ 60;
+      int sec = time % 60;
+
+      return "$min 분 $sec 초";
+    }
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 5),
       child: ElevatedButton(
@@ -36,7 +43,7 @@ class DetailBox extends StatelessWidget {
                       color: Colors.white,
                       fontSize: 32,
                       fontWeight: FontWeight.bold)),
-              Text('${(record.exerciseTime! / 60).toStringAsFixed(1)}분',
+              Text(getSum(record.exerciseTime!),
                   style: const TextStyle(color: Colors.white, fontSize: 28)),
             ],
           ),

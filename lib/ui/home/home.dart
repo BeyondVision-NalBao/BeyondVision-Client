@@ -40,7 +40,7 @@ class _HomePageState extends State<HomePage> {
       tts.setSpeechRate(0.4);
       tts.setPitch(0.9);
       tts.speak(
-          "오늘도 BeyondVision과 함께 즐겁게 운동해봅시다. 설명을 듣고 싶으시다면 언제든 우측 상단의 스피커 버튼을 누르세요!");
+          "오늘도 비욘드비전과 함께 즐겁게 운동해봅시다. 설명을 듣고 싶으시다면 언제든 우측 상단의 스피커 버튼을 누르세요!");
     }
     super.initState();
   }

@@ -75,6 +75,7 @@ class _CameraViewState extends State<CameraView> {
   bool isStreamingPaused = false;
 
   void sendMessagetoWatch(String msg) {
+    print(msg);
     final message = {'data': msg};
     watch.sendMessage(message);
     // setState(() => _log.add('Sent message: $message'));
@@ -90,6 +91,7 @@ class _CameraViewState extends State<CameraView> {
     Wakelock.enable();
     super.initState();
     cal.setCount(widget.count);
+    print(cal.count);
     tts.setLanguage('ko-KR');
     tts.setSpeechRate(0.8);
     tts.setPitch(0.9);
@@ -124,6 +126,8 @@ class _CameraViewState extends State<CameraView> {
     }
     if (_cameraIndex != -1) {
       setState(() {});
+      initPlatformState();
+      print(_paired);
       _startLiveFeed();
     }
   }
@@ -257,7 +261,9 @@ class _CameraViewState extends State<CameraView> {
         }
       });
       initPlatformState();
-      setState(() {});
+      setState(() {
+        isStreamingPaused = false;
+      });
     });
   }
 
@@ -286,10 +292,11 @@ class _CameraViewState extends State<CameraView> {
             {'exercise': widget.workout.name, 'weight': widget.weight}
           ]));
         }
-        if (!isSpeaking) {
+
+        if (isSpeaking == false) {
           isSpeaking = true;
           await tts.speak(result).then((_) {
-            isSpeaking = false; // 말하기가 끝나면 상태 업데이트
+            isSpeaking = false;
           });
         }
         setState(() {
@@ -312,11 +319,15 @@ class _CameraViewState extends State<CameraView> {
   Future _stopLiveFeed() async {
     await _controller?.stopImageStream();
     await _controller?.dispose();
-    if (_paired == true) {
+    setState(() {
+      isStreamingPaused = true;
+    });
+    initPlatformState();
+
+    if (cal.count == 0) {
       sendMessagetoWatch('stop');
-    } else {
-      finishExercise();
     }
+
     _controller = null;
   }
 
@@ -402,7 +413,7 @@ class _CameraViewState extends State<CameraView> {
       Record record = Record(
           null,
           successCount,
-          widget.count * 2,
+          widget.count * 5,
           widget.workout.name,
           DateTime.now(),
           successCount,
@@ -422,22 +433,44 @@ class _CameraViewState extends State<CameraView> {
     final url = Uri.parse(
         'http://34.64.89.205/api/v1/exercise/record/${widget.workout.exerciseId}');
 
-    var response = await http.post(url,
-        headers: {"Content-Type": "application/json; charset=UTF-8"},
-        body: json.encode({
-          "exerciseTime": exerciseTime,
-          "exerciseCount": widget.count,
-          "memberId": widget.memberId,
-          "successCount": successCount,
-          "caloriesBurnedSum": calories,
-          "averageHeartRate": heartRate
-        }));
-    print(response.statusCode);
-    if (response.statusCode == 200) {
-      var data = jsonDecode(response.body);
+    late var response;
 
-      goToResult();
+    if (exerciseTime != 0) {
+      var response = await http.post(url,
+          headers: {"Content-Type": "application/json; charset=UTF-8"},
+          body: json.encode({
+            "exerciseTime": exerciseTime,
+            "exerciseCount": widget.count,
+            "memberId": widget.memberId,
+            "successCount": successCount,
+            "caloriesBurnedSum": calories,
+            "averageHeartRate": heartRate
+          }));
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+
+        goToResult();
+      }
+    } else {
+      var response = await http.post(url,
+          headers: {"Content-Type": "application/json; charset=UTF-8"},
+          body: json.encode({
+            "exerciseTime": widget.count * 2,
+            "exerciseCount": widget.count,
+            "memberId": widget.memberId,
+            "successCount": successCount,
+            "caloriesBurnedSum": calories,
+            "averageHeartRate": heartRate
+          }));
+      print(response.statusCode);
+      if (response.statusCode == 200) {
+        var data = jsonDecode(response.body);
+
+        goToResult();
+      }
     }
+
     //throw Error();
   }
 
@@ -456,7 +489,6 @@ class _CameraViewState extends State<CameraView> {
     // 카메라 컨트롤러 해제
     Wakelock.disable(); // Wakelock 비활성화
     tts.stop();
-
     super.dispose();
   }
 

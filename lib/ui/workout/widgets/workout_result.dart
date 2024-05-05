@@ -2,23 +2,51 @@ import 'package:beyond_vision/core/constants.dart';
 import 'package:beyond_vision/model/record_model.dart';
 import 'package:beyond_vision/ui/home/home.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_tts/flutter_tts.dart';
 
-class WorkoutResultPage extends StatelessWidget {
+class WorkoutResultPage extends StatefulWidget {
   final List<Record> results;
   const WorkoutResultPage({super.key, required this.results});
 
   @override
+  State<WorkoutResultPage> createState() => _WorkoutResultPageState();
+}
+
+class _WorkoutResultPageState extends State<WorkoutResultPage> {
+  FlutterTts tts = FlutterTts();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    tts.setLanguage('ko-KR');
+    tts.setSpeechRate(0.8);
+
+    super.initState();
+  }
+
+  @override
+  void dispose() {
+    // TODO: implement dispose
+    tts.stop();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    int getSum() {
+    String getSum() {
       int sum = 0;
-      for (int i = 0; i < results.length; i++) {
-        sum += results[i].exerciseTime!;
+      for (int i = 0; i < widget.results.length; i++) {
+        sum += widget.results[i].exerciseTime!;
       }
-      return sum;
+      int min = sum ~/ 60;
+      int sec = sum % 60;
+
+      return "$min 분 $sec 초";
     }
+
     // WorkoutProvider workoutProvider = Provider.of<WorkoutProvider>(context);
     // WorkOutService workoutService = WorkOutService();
-
+    tts.speak("운동이 끝났습니다.");
     return Scaffold(
       backgroundColor: Colors.black,
       body: Center(
@@ -41,7 +69,7 @@ class WorkoutResultPage extends StatelessWidget {
                             color: Colors.white,
                             fontSize: 36,
                             fontWeight: FontWeight.bold)),
-                    Text(getSum().toString(),
+                    Text(getSum(),
                         style:
                             const TextStyle(color: Colors.white, fontSize: 32))
                   ],
@@ -61,7 +89,7 @@ class WorkoutResultPage extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 20.0),
                   child: Column(
-                      children: results
+                      children: widget.results
                           .map((e) => Row(
                                 mainAxisAlignment:
                                     MainAxisAlignment.spaceBetween,

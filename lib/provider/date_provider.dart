@@ -94,8 +94,8 @@ class DateProvider extends ChangeNotifier {
       double sum = 0.0;
       for (int j = 0; j < thisWeek[i].length; j++) {
         if (thisWeek[i][j].exerciseTime != null) {
-          sum += double.parse(
-              (thisWeek[i][j].exerciseTime! / 60).toStringAsFixed(1));
+          sum +=
+              double.parse((thisWeek[i][j].exerciseTime!).toStringAsFixed(1));
         }
       }
       thisWeekExerciseTime.add(sum);

@@ -14,7 +14,7 @@ class CalculateDegree {
       if (name == "스쿼트") {
         threshold = initCalculateAngle(pose, PoseLandmarkType.leftHip,
             PoseLandmarkType.leftKnee, PoseLandmarkType.leftAnkle);
-        if (threshold < 135) {
+        if (threshold < 170) {
           count--;
           result = squat(pose);
         } else {
@@ -194,7 +194,7 @@ class CalculateDegree {
     final PoseLandmark joint3 = pose.landmarks[PoseLandmarkType.leftHeel];
     final firstLimit = calculateAngle(joint1, joint2, joint3);
     //85-95
-
+    print("firstLimit: $firstLimit");
     //엉덩이 힌지가 불안한 경우: 100~ (무게중심이 앞에 있는경우)
 
     //힙 각도
@@ -202,24 +202,29 @@ class CalculateDegree {
     final PoseLandmark joint5 = pose.landmarks[PoseLandmarkType.leftHip];
     final PoseLandmark joint6 = pose.landmarks[PoseLandmarkType.leftKnee];
     final secondLimit = calculateAngle(joint4, joint5, joint6);
+    print("secondLimit: $secondLimit");
+
     //70-80
     //등이 구부러진 자세: ~60
 
     //무릎 100 이상 && 힙 70 미만 => 상체를 바르게 세워야함
     //무릎 100이상 && 힙 100이상 => 무릎이 튀어나옴
 
-    if (firstLimit > 100 && secondLimit > 100) {
+    if (firstLimit > 150 && secondLimit > 150) {
       result = "무릎이 발보다 앞으로 나와있습니다.";
-    } else if (firstLimit > 100 && secondLimit > 70) {
-      result = "발 뒷꿈치에 힘을 주어 무게중심을 뒤로 보내주세요";
-    } else if (firstLimit > 100 && secondLimit < 70) {
+    } else if (firstLimit > 130 && secondLimit > 70) {
+      result = "무게중심을 뒤로 보내주세요";
+    } else if (firstLimit > 130 && secondLimit < 70) {
       result = "상체를 더 세워주세요";
-    } else if (firstLimit < 100 && secondLimit < 60) {
+    } else if (firstLimit < 130 && secondLimit < 60) {
       result = "등을 곧게 펴주세요";
     } else if (firstLimit > 80 &&
-        firstLimit < 100 &&
+        firstLimit < 130 &&
         secondLimit > 70 &&
         secondLimit < 80) {
+      success++;
+      result = "잘하고 있습니다.";
+    } else {
       success++;
       result = "잘하고 있습니다.";
     }

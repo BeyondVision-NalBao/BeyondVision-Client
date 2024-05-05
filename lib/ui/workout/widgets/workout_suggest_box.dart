@@ -92,7 +92,7 @@ class _SuggestBoxState extends State<SuggestBox> {
                           MaterialPageRoute(
                               builder: (context) => CameraView(
                                   workout: snapshot.data!,
-                                  count: 3,
+                                  count: 30,
                                   memberId: auth.memberId,
                                   weight: auth.weight)));
                     },
