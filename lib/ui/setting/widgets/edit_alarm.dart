@@ -148,9 +148,11 @@ class _EditAlarmState extends State<EditAlarm> {
             SizedBox(
               height: 150,
               child: TimePickerSpinner(
+                locale: const Locale('ko'),
+                is24HourMode: false,
                 highlightedTextStyle: const TextStyle(
                     color: Color(fontYellowColor),
-                    fontSize: 36,
+                    fontSize: 34,
                     fontWeight: FontWeight.bold),
                 normalTextStyle: const TextStyle(
                     color: Colors.white,
@@ -164,7 +166,7 @@ class _EditAlarmState extends State<EditAlarm> {
                 },
               ),
             ),
-            SizedBox(height: 30),
+            const SizedBox(height: 30),
             TextButton(
                 onPressed: () async {
                   _toggleTimer();

@@ -3,13 +3,13 @@ import 'package:beyond_vision/model/workout_model.dart';
 import 'package:beyond_vision/provider/login_provider.dart';
 import 'package:beyond_vision/ui/workout/widgets/camera_flutter.dart';
 import 'package:flutter/material.dart';
-
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:provider/provider.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class WorkOutExplain extends StatefulWidget {
   final WorkOut workout;
+
   final bool pop;
   const WorkOutExplain({super.key, required this.workout, required this.pop});
 
@@ -20,19 +20,20 @@ class WorkOutExplain extends StatefulWidget {
 class _WorkOutExplainState extends State<WorkOutExplain> {
   final FlutterTts tts = FlutterTts();
   late YoutubePlayerController _controller;
-  bool isListening = false;
+  bool isListening = true;
   int isResult = 1;
   String networkUrl = "";
   String description = "";
-
   @override
   void initState() {
     int endIndex = widget.workout.description.length - 11;
+    int lastIndex = widget.workout.description.lastIndexOf("5");
     description = widget.workout.description
         .replaceAll('\\n', '\n')
-        .substring(0, endIndex);
+        .substring(0, lastIndex - 4);
     // 맨 뒤에서부터 11번째 글자까지의 인덱스
     String youtube = widget.workout.description.substring(endIndex);
+
     String videoId = YoutubePlayer.convertUrlToId(youtube)!;
 
     // TODO: implement initState
@@ -46,25 +47,41 @@ class _WorkOutExplainState extends State<WorkOutExplain> {
             loop: false,
             isLive: false,
             forceHD: false,
-            enableCaption: true));
+            enableCaption: true))
+      ..addListener(_videoPlayerListener);
     tts.setSpeechRate(0.4);
     tts.setPitch(0.9);
-    tts.speak(widget.workout.description);
+    if (isListening == true) {
+      tts.speak(widget.workout.description);
+    }
     super.initState();
     networkUrl = widget.workout.exerciseImageUrl;
+  }
+
+  _videoPlayerListener() {
+    if (_controller.value.isPlaying) {
+      // 플레이어가 재생 중일 때
+      if (isListening == true) {
+        tts.stop();
+        setState(() {
+          isListening = false;
+        });
+      }
+    }
   }
 
   @override
   void dispose() {
     // TODO: implement dispose
     tts.stop();
+    _controller.removeListener(_videoPlayerListener);
+    _controller.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     AuthProvider auth = Provider.of<AuthProvider>(context);
-
     return Dialog(
       backgroundColor: const Color(boxColor),
       elevation: 5,
@@ -76,13 +93,30 @@ class _WorkOutExplainState extends State<WorkOutExplain> {
           child: Column(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                Text(
-                  widget.workout.name,
-                  style: const TextStyle(
-                      color: Color(fontYellowColor),
-                      fontSize: 40,
-                      fontWeight: FontWeight.bold),
-                ),
+                Row(children: [
+                  Text(
+                    widget.workout.name,
+                    style: const TextStyle(
+                        color: Color(fontYellowColor),
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  IconButton(
+                    icon: Icon(isListening ? Icons.pause : speakerIcon,
+                        color: const Color(fontYellowColor), size: 50),
+                    onPressed: () {
+                      if (isListening == false) {
+                        isListening = true;
+                        _controller.pause();
+                        tts.speak(widget.workout.description);
+                      } else {
+                        isListening = false;
+                        tts.stop();
+                      }
+                      setState(() {});
+                    },
+                  ),
+                ]),
                 SizedBox(
                   height: 520,
                   child: SingleChildScrollView(
@@ -91,8 +125,9 @@ class _WorkOutExplainState extends State<WorkOutExplain> {
                         Image.network(networkUrl),
                         YoutubePlayerBuilder(
                             player: YoutubePlayer(controller: _controller),
-                            builder: (context, player) =>
-                                Container(child: player)),
+                            builder: (context, player) {
+                              return Container(child: player);
+                            }),
                         Text(description,
                             textAlign: TextAlign.center,
                             style: const TextStyle(

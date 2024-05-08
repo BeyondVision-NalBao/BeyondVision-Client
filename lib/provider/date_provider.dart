@@ -94,11 +94,11 @@ class DateProvider extends ChangeNotifier {
       double sum = 0.0;
       for (int j = 0; j < thisWeek[i].length; j++) {
         if (thisWeek[i][j].exerciseTime != null) {
-          sum +=
-              double.parse((thisWeek[i][j].exerciseTime!).toStringAsFixed(1));
+          sum += thisWeek[i][j].exerciseTime!;
         }
       }
-      thisWeekExerciseTime.add(sum);
+
+      thisWeekExerciseTime.add(double.parse((sum / 60).toStringAsFixed(1)));
     }
 
     notifyListeners(); // 상태가 변경될 때마다 리스너들에게 알림
